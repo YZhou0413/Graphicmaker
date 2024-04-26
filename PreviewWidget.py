@@ -7,7 +7,7 @@ class PreviewLabel(QLabel):
         self.init_ui()
 
     def init_ui(self):
-        self.setFixedSize(200, 200)
+        self.setFixedSize(300, 200)
         self.set_gray_background()
 
     def set_gray_background(self):
@@ -17,3 +17,9 @@ class PreviewLabel(QLabel):
 
         # 将灰色背景图片设置为预览标签的背景
         self.setPixmap(gray_image)
+
+    def update_preview(self, image_path):
+        # 根据给定的图片路径更新预览
+        pixmap = QPixmap(image_path)
+        self.setPixmap(pixmap)
+        self.show()

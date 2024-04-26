@@ -38,3 +38,12 @@ class FileManager(QObject):
         if os.path.exists(part_folder_path) and os.path.isdir(part_folder_path):
             styles = [f for f in os.listdir(part_folder_path) if os.path.isfile(os.path.join(part_folder_path, f))]
         return sorted(styles)
+    
+    def get_paths_for_part(self, template_name, part_name):
+        paths = {}
+        part_folder_path = os.path.join(self.folder_path, template_name, part_name)
+        if os.path.exists(part_folder_path) and os.path.isdir(part_folder_path):
+            styles = self.get_styles_for_part(template_name, part_name)
+            for style in styles:
+                paths[style] = os.path.join(part_folder_path, style)
+        return paths

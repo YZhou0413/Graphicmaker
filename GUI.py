@@ -1,6 +1,8 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout,QGridLayout, QPushButton, QComboBox, QListWidget, QListWidgetItem
-from PyQt6.QtGui import QPixmap, QPainter, QImage
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, \
+                            QGridLayout, QPushButton, QComboBox, QListWidget, \
+                            QListWidgetItem, QMessageBox
+from PyQt6.QtGui import QPixmap, QPainter, QImage, QImageReader
 from PyQt6.QtCore import Qt
 from PartSelect import PartSelector
 from TemplateManager import FileManager
@@ -10,7 +12,7 @@ class Graphicmaker(QWidget):
     def __init__(self, folder_path='Assets',part_name = '--', styles = '--'):
         super().__init__()
         self.setWindowTitle('Graphic Maker')
-        self.setGeometry(100, 100, 400, 300)
+        self.setGeometry(100, 100, 600, 400)
         self.file_manager = FileManager(folder_path)
         self.part_name = part_name
         self.styles = styles
@@ -54,94 +56,104 @@ class Graphicmaker(QWidget):
         self.template_combo_box.addItems(template_names)
 
     def handle_template_change(self):
-        # 清空现有的部件选择器
-        self.clear_part_selectors()
-
-        # 获取选择的模板名称
         template_name = self.template_combo_box.currentText()
-
-        # 加载并显示部件选择器
-        self.generate_part_selectors(template_name)
+        self.clear_part_selectors()
+        self.init_part_selectors()
+        self.update_part_selectors(template_name)
 
     def clear_part_selectors(self):
-        # 清空现有的部件选择器
-        for selector in self.part_selectors:
-            selector.deleteLater()
+        self.part_selectors = [PartSelector('---', '---') for _ in range(12)]
 
-        # 清空部件选择器列表
-        self.part_selectors = []
+    def init_part_selectors(self):
+        part_selector_layout_l = QGridLayout()
+        part_selector_layout_r = QGridLayout()
+        for i, default_selector in enumerate(self.part_selectors):
+            layout = part_selector_layout_l if i < 8 else part_selector_layout_r
+            row, col = divmod(i, 2)
+            layout.addWidget(default_selector, row, col)
+        self.main_layout.addLayout(part_selector_layout_l, 1, 0, 4, 2)
+        self.main_layout.addLayout(part_selector_layout_r, 3, 2, 2, 2)
 
-    def generate_part_selectors(self, template_name):
-        part_selector_layout = QGridLayout()
-        # 获取部件名称列表
+    def update_part_selectors(self, template_name):
         parts = self.file_manager.get_part_names_for_template(template_name)
 
-        row = 0
-        col = 0
+        if len(parts) > 12:
+            QMessageBox.warning(self, "警告", "部件数量过多！")
+            return
 
-        for part_name in parts:
-            # 获取部件的实际样式列表
-            styles = self.file_manager.get_styles_for_part(template_name, part_name)
-            part_selector = PartSelector(part_name, styles)
-
-            # 连接部件选择器的信号
-            part_selector.part_selected.connect(self.handle_part_selected)
-
-            # 将部件选择器添加到布局中的特定位置
-            part_selector_layout.addWidget(part_selector, row, col)
-
-            # 更新列索引，每行显示两个部件选择器
-            col += 1
-            if col > 1:
-                col = 0
-                row += 1
-
-            # 将部件选择器添加到部件选择器列表
-            self.part_selectors.append(part_selector)
-        self.main_layout.addLayout(part_selector_layout, 1, 0, 4, 2)
+        for i, part_name in enumerate(parts):
+            if i < len(self.part_selectors):
+                styles = self.file_manager.get_styles_for_part(template_name, part_name)
+                paths = self.file_manager.get_paths_for_part(template_name, part_name)
+                self.part_selectors[i].set_text(part_name)
+                self.part_selectors[i].set_styles(styles, paths)
+                self.part_selectors[i].part_selected.connect(self.handle_part_selected)
+            else:
+                break
 
 
     def handle_part_selected(self, part_name, selected_style):
+        '''
         print(f'Selected part: {part_name}, Style: {selected_style}')
+        template_name = self.template_combo_box.currentText()
+        paths = self.file_manager.get_paths_for_part(template_name, part_name)
+        
+        if selected_style in paths:
+            image_path = paths[selected_style]  # 根据样式名称获取路径
+            self.preview.update_preview(image_path)  # 更新预览
+        else:
+            print(f'Error: Style path not found for {selected_style}')
 
+    # 获取已经选择的所有部件的图片路径
+        selected_parts = [selector.current_part() for selector in self.part_selectors if selector.current_part()]
+        composite_image = self.create_composite_image(template_name, selected_parts)  # 合成图片
+        self.preview.update_preview(composite_image)  # 更新预览
+    '''
+        
+    '''
+    def create_composite_image(self, template_name, selected_parts):
+        composite_image = QImage(192, 192, QImage.Format.Format_RGB32)  # 创建一个新的图像
+        composite_image.fill(Qt.GlobalColor.white)  # 填充白色背景
+        painter = QPainter(composite_image)  # 创建绘图对象
 
-    def update_avatar_preview(self):
-        # 合成头像
-        avatar_image = self.create_avatar()
-        if avatar_image:
-            pixmap = QPixmap.fromImage(avatar_image)
-            self.preview_label.setPixmap(pixmap.scaled(self.preview_label.size(), aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio))
+    # 逐个绘制已选择的部件
+        for part_name in selected_parts:
+            paths = self.file_manager.get_paths_for_part(template_name, part_name)  # 获取路径字典
+            if part_name in paths:
+                image_path = paths[part_name]  # 根据部件名称获取路径
+                part_image = QImage(image_path)  # 加载部件图片
+                if not part_image.isNull():  # 检查图片是否有效
+                    painter.drawImage(0, 0, part_image)  # 将部件图片绘制到合成图片上
+                else:
+                    print(f'Error: Invalid image for {part_name}')
+            else:
+                print(f'Error: Part path not found for {part_name}')
 
-    def create_avatar(self):
-        avatar_image = QImage(200, 200, QImage.Format.Format_RGB888)
-        avatar_image.fill(Qt.GlobalColor.gray)
+        painter.end()  # 结束绘制
+        return composite_image
+        '''
+    def create_composite_image(self, template_name, selected_parts):
+        composite_pixmap = QPixmap(192, 192)  # 创建一个新的画布
+        composite_pixmap.fill(Qt.GlobalColor.white)  # 填充白色背景
 
-        painter = QPainter(avatar_image)
+    # 逐个绘制已选择的部件
+        painter = QPainter(composite_pixmap)
+        for part_name in selected_parts:
+            paths = self.file_manager.get_paths_for_part(template_name, part_name)  # 获取路径字典
+            if part_name in paths:
+                image_path = paths[part_name]  # 根据部件名称获取路径
+                part_pixmap = QPixmap(image_path)  # 加载部件图片
+                if not part_pixmap.isNull():  # 检查图片是否有效
+                    painter.drawPixmap(0, 0, part_pixmap)  # 将部件图片绘制到画布上
+                else:
+                    print(f'Error: Invalid image for {part_name}')
+            else:
+                print(f'Error: Part path not found for {part_name}')
+        painter.end()  # 结束绘制
 
-        # 根据当前选择的部件样式绘制头像
-        if self.avatar_parts['hair']:
-            # 绘制头发
-            # 示例：使用实际的绘制代码替换这里
-            pass
-
-        if self.avatar_parts['eyes']:
-            # 绘制眼睛
-            # 示例：使用实际的绘制代码替换这里
-            pass
-
-        if self.avatar_parts['nose']:
-            # 绘制鼻子
-            # 示例：使用实际的绘制代码替换这里
-            pass
-
-        if self.avatar_parts['mouth']:
-            # 绘制嘴巴
-            # 示例：使用实际的绘制代码替换这里
-            pass
-
-        painter.end()
-        return avatar_image
-
+        composite_image = composite_pixmap.toImage()  # 将 QPixmap 转换为 QImage
+        return composite_image  # 返回合成后的图片对象
+    
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = Graphicmaker()
