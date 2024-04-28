@@ -112,6 +112,7 @@ class Graphicmaker(QWidget):
         # 逐个绘制已选择的部件
         painter = QPainter(composite_pixmap)
         for style_name in selected_styles:
+            # find a way to keep the full path for the selected parts to remove this ugly part
             parts = self.file_manager.get_part_names_for_template(template_name)
             all_paths = {}
             for part in parts:
