@@ -2,9 +2,9 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGridLayout, QListWidg
 from PyQt6.QtCore import pyqtSignal, Qt
 
 class PartSelector(QWidget):
-    part_selected = pyqtSignal(str, str)  # 自定义信号，传递部件类型和所选样式
+    style_chosen = pyqtSignal(str, str)  # 自定义信号，传递部件类型和所选样式
 
-    def __init__(self, part_name, styles, parent=None):
+    def __init__(self, part_name, _styles, parent=None):
         super().__init__(parent)
         self.part_name = part_name
         self.styles = {}
@@ -22,13 +22,13 @@ class PartSelector(QWidget):
             item = QListWidgetItem(style)
             item.setData(0, style['path'])
             self.list_widget.addItem(item)
-        self.list_widget.itemClicked.connect(self.handle_item_click)
+        self.list_widget.itemClicked.connect(self.react_item_click)
         self.block_layout.addWidget(self.list_widget)
 
-    def handle_item_click(self, item):
+    def react_item_click(self, item):
         if isinstance(item, QListWidgetItem):  # 确保 item 是 QListWidgetItem 类型
             selected_style = item.data(0)  # 获取所选项的文本
-            self.part_selected.emit(self.part_name, selected_style)  # 发送部件选择信号
+            self.style_chosen.emit(self.part_name, selected_style)  # 发送部件选择信号
         else:
             print("Invalid item type:", type(item))
 
@@ -51,7 +51,7 @@ class PartSelector(QWidget):
                 item.setData(0, path)  # 将对应的路径存储在列表项的数据中
             self.list_widget.addItem(item)
             
-    def current_part(self):
+    def current_style(self):
         return self.list_widget.currentItem().text() if self.list_widget.currentItem() else None
 
 

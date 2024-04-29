@@ -1,0 +1,12 @@
+Template:
+    the root categories:
+        exp.: Female_young, Female_old, Male...
+
+Part: 
+    Facial Features:
+        exp.: Hair, Eyes, Nose, Mouth...
+
+Style: 
+    refer to the individual style for each Part:
+        exp.: Green hair, red hair, long hair, short hair...
+    
