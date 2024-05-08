@@ -19,7 +19,6 @@ class PreviewLabel(QLabel):
         self.setPixmap(gray_image)
 
     def update_preview(self, image_path):
-        # 根据给定的图片路径更新预览
-        pixmap = QPixmap(image_path)
+        pixmap = QPixmap(image_path) 
         self.setPixmap(pixmap)
         self.show()

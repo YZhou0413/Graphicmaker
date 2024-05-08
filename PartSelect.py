@@ -19,8 +19,10 @@ class PartSelector(QWidget):
         self.block_layout.addWidget(self.label)
 
         for style in self.styles:
-            item = QListWidgetItem(style)
-            item.setData(0, style['path'])
+            item_text = str(style)
+            item_data = style["path"]
+            item = QListWidgetItem(item_text)
+            item.setData(Qt.ItemDataRole.UserRole, item_data )
             self.list_widget.addItem(item)
         self.list_widget.itemClicked.connect(self.react_item_click)
         self.block_layout.addWidget(self.list_widget)
@@ -41,14 +43,14 @@ class PartSelector(QWidget):
         self.styles = styles
         for style in self.styles:
             if isinstance(style, dict):
-                name = style['name']
-                path = paths[name] if paths else None
+                name = style[name]
+                path = paths[name] if paths else "None"
             else:
                 name = style
                 path = style
             item = QListWidgetItem(name)  # 使用样式名称作为列表项的文本
             if path:
-                item.setData(0, path)  # 将对应的路径存储在列表项的数据中
+                item.setData(Qt.ItemDataRole.UserRole, path)  # 将对应的路径存储在列表项的数据中
             self.list_widget.addItem(item)
             
     def current_style(self):

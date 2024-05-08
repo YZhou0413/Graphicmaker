@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLay
     QListWidgetItem, QMessageBox
 from PyQt6.QtGui import QPixmap, QPainter, QImage, QImageReader
 from PyQt6.QtCore import Qt
+import os
 from PartSelect import PartSelector
 from TemplateManager import FileManager
 from PreviewWidget import PreviewLabel
@@ -27,12 +28,8 @@ class Graphicmaker(QWidget):
 
         # 初始化模板下拉选择框
         self.setup_template_combo_box()
-        self.setup_preview()
         # 加载模板列表
         self.load_templates()
-
-    def setup_preview(self):
-        self.main_layout.addWidget(self.preview, 1, 2, 2, 2)
 
     def setup_template_combo_box(self):
         template_layout = QVBoxLayout()
@@ -43,7 +40,7 @@ class Graphicmaker(QWidget):
 
         template_layout.addWidget(self.template_label)
         template_layout.addWidget(self.template_combo_box)
-        self.main_layout.addLayout(template_layout, 0, 0, 1, 4)
+        self.main_layout.addLayout(template_layout, 0, 0, 1, 3)
 
         
 
@@ -61,25 +58,24 @@ class Graphicmaker(QWidget):
         self.style_selectors = [PartSelector('---', '---') for _ in range(12)]
 
     def init_style_selectors(self):
-        part_selector_layout_l = QGridLayout()
-        part_selector_layout_r = QGridLayout()
+        part_selector_layout = QGridLayout()
         for i, default_selector in enumerate(self.style_selectors):
-            layout = part_selector_layout_l if i < 8 else part_selector_layout_r
-            row, col = divmod(i, 2)
+            layout = part_selector_layout
+            row, col = divmod(i, 3)
             layout.addWidget(default_selector, row, col)
-        self.main_layout.addLayout(part_selector_layout_l, 1, 0, 4, 2)
-        self.main_layout.addLayout(part_selector_layout_r, 3, 2, 2, 2)
+        self.main_layout.addLayout(part_selector_layout, 1, 0, 4, 3)
+
 
     def update_style_selectors(self, template_name):
         parts = self.file_manager.get_part_names_for_template(template_name)
 
         if len(parts) > 12:
-            QMessageBox.warning(self, "Warning", "Too Many Parts！")
+            QMessageBox.warning(self, "Warning", "Too Many Parts!")
             return
 
         for i, part_name in enumerate(parts):
             if i < len(self.style_selectors):
-                styles = self.file_manager.get_styles_for_part(template_name, part_name)
+                styles = self.file_manager.remove_dosign(template_name, part_name)
                 paths = self.file_manager.get_paths_for_style(template_name, part_name)
                 self.style_selectors[i].set_text(part_name)
                 self.style_selectors[i].set_styles(styles, paths)
@@ -119,12 +115,14 @@ class Graphicmaker(QWidget):
                 all_paths = {**all_paths, **paths}
 
             if style_name in all_paths:
-                image_path = all_paths[style_name]  # 根据部件名称获取路径
-                part_pixmap = QPixmap(image_path)  # 加载部件图片
-                if not part_pixmap.isNull():  # 检查图片是否有效
-                    painter.drawPixmap(0, 0, part_pixmap)  # 将部件图片绘制到画布上
-                else:
-                    print(f'Error: Invalid image for {style_name}')
+                image_paths = all_paths[style_name]  # 根据部件名称获取路径
+                for each_path in image_paths:
+                    print(os.fsdecode(each_path))
+                    each_pixmap = QPixmap(os.fsdecode(each_path))  # 加载部件图片
+                    if not each_pixmap.isNull():  # 检查图片是否有效
+                        painter.drawPixmap(0, 0, each_pixmap)  # 将部件图片绘制到画布上
+                    else:
+                        print(f'Error: Invalid image for {style_name}')
             else:
                 print(f'Error: Part path not found for {style_name}')
         painter.end()  # 结束绘制

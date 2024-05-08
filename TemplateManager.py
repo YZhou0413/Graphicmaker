@@ -32,18 +32,30 @@ class FileManager(QObject):
         return part_names
     
     def get_styles_for_part(self, template_name, part_name):
-        styles = []  # 在这里根据实际情况获取部件的样式列表
-        # 例如，遍历部件文件夹，找到对应部件名称的样式
+        styles = [] 
         part_folder_path = os.path.join(self.folder_path, template_name, part_name)
         if os.path.exists(part_folder_path) and os.path.isdir(part_folder_path):
-            styles = [f for f in os.listdir(part_folder_path) if os.path.isfile(os.path.join(part_folder_path, f))]
-        return sorted(styles)
+            styles = [ f for f in os.listdir(part_folder_path) if os.path.isfile(os.path.join(part_folder_path, f))] 
+        styles.insert(0,"None")
+        return styles
     
+    def remove_dosign(self, template_name, part_name):
+        styles = self.get_styles_for_part(template_name, part_name)
+        styles_no_dosign = [style for style in styles if "$" not in style]
+        return styles_no_dosign
+                
+
     def get_paths_for_style(self, template_name, part_name):
         paths = {}
         part_folder_path = os.path.join(self.folder_path, template_name, part_name)
         if os.path.exists(part_folder_path) and os.path.isdir(part_folder_path):
             styles = self.get_styles_for_part(template_name, part_name)
             for style in styles:
-                paths[style] = os.path.join(part_folder_path, style)
+                if style == "None":
+                    paths[style] = ["None"]
+                elif style[-1] == "$":
+                    real_style = style[:-1]
+                    paths[real_style].append(os.fsencode(os.path.join(part_folder_path, style)))
+                else:
+                    paths[style] = [os.fsencode(os.path.join(part_folder_path, style))] 
         return paths
