@@ -35,6 +35,7 @@ class PartSelector(QWidget):
             print("Invalid item type:", type(item))
 
     def set_text(self, text):
+        
         self.label.setText(text)
         self.part_name = text
 

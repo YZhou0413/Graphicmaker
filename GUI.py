@@ -55,7 +55,9 @@ class Graphicmaker(QWidget):
         self.update_style_selectors(template_name)
 
     def clear_style_selectors(self):
-        self.style_selectors = [PartSelector('---', '---') for _ in range(12)]
+        for i in self.style_selectors:
+            i.deleteLater()
+        self.style_selectors = [PartSelector('', '') for _ in range(12)]
 
     def init_style_selectors(self):
         part_selector_layout = QGridLayout()
