@@ -53,9 +53,15 @@ class FileManager(QObject):
             for style in styles:
                 if style == "None":
                     paths[style] = ["None"]
-                elif style[-1] == "$":
-                    real_style = style[:-1]
-                    paths[real_style].append(os.fsencode(os.path.join(part_folder_path, style)))
+                elif style[-5] == "$":
+                    real_style = style.replace('$', '')
+                    if real_style in paths:
+                        paths[real_style].append(os.fsencode(os.path.join(part_folder_path, style)))
+                    else:
+                        paths[real_style] = [os.fsencode(os.path.join(part_folder_path, style))]
                 else:
-                    paths[style] = [os.fsencode(os.path.join(part_folder_path, style))] 
+                    if style in paths:
+                        paths[style].append(os.fsencode(os.path.join(part_folder_path, style)))
+                    else:
+                        paths[style] = [os.fsencode(os.path.join(part_folder_path, style))]
         return paths
