@@ -3,13 +3,16 @@ from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLay
     QGridLayout, QPushButton, QComboBox, QListWidget, \
     QListWidgetItem, QMessageBox
 from PyQt6.QtGui import QPixmap, QPainter, QImage, QImageReader
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 import os
 from PartSelect import PartSelector
 from TemplateManager import FileManager
 from PreviewWidget import PreviewLabel
+from LayerManager import LayerManager
 
 class Graphicmaker(QWidget):
+    style_layers_info = pyqtSignal(list)
+    
     def __init__(self, folder_path='Assets',part_name = '--', styles = '--'):
         super().__init__()
         self.setWindowTitle('Graphic Maker')
@@ -20,6 +23,8 @@ class Graphicmaker(QWidget):
         self.style_selectors = []
         self.preview = PreviewLabel() 
         self.main_layout = QGridLayout(self)
+        self.layer_manager = LayerManager()
+        
         
         self.init_ui()
 
@@ -90,16 +95,26 @@ class Graphicmaker(QWidget):
         print(f'Selected part: {part_name}, Style: {selected_style}')
         template_name = self.template_combo_box.currentText()
         paths = self.file_manager.get_paths_for_style(template_name, part_name)
-        
+
         if selected_style in paths:
-            image_path = paths[selected_style]  # 根据样式名称获取路径
-            self.preview.update_preview(image_path)  # 更新预览
+            image_path = paths[selected_style]
+            self.style_layers_info.connect(self.layer_manager.set_selected_styles) 
+            self.update_preview_with_image(image_path)
+            self.update_layers_with_selected_style()
         else:
             print(f'Error: Style path not found for {selected_style}')
 
-    # 获取已经选择的所有部件的图片路径
+    def update_preview_with_image(self, image_path):
+        self.preview.update_preview(image_path)
+
+    def update_layers_with_selected_style(self):
+        # 获取已经选择的所有部件的图片路径
         selected_styles = [selector.current_style() for selector in self.style_selectors if selector.current_style()]
-        composite_image = self.create_composite_image(template_name, selected_styles, paths)  # 合成图片
+        self.style_layers_info.emit(selected_styles)
+        self.layer_manager.update_layers()
+        template_name = self.template_combo_box.currentText()
+        paths = {part: self.file_manager.get_paths_for_style(template_name, part) for part in selected_styles}
+        composite_image = self.create_composite_image(template_name, selected_styles, paths)
         self.preview.update_preview(composite_image)  # 更新预览
     
     def create_composite_image(self, template_name, selected_styles, _paths):

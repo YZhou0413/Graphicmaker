@@ -9,6 +9,7 @@ class PreviewLabel(QLabel):
     def init_ui(self):
         self.setFixedSize(300, 200)
         self.set_gray_background()
+        self.setWindowTitle('Preview')
 
     def set_gray_background(self):
         # 创建灰色背景图片
