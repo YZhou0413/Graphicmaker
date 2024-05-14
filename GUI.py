@@ -7,11 +7,11 @@ from PyQt6.QtCore import Qt, pyqtSignal
 import os
 from PartSelect import PartSelector
 from TemplateManager import FileManager
-from PreviewWidget import PreviewLabel
+from PreviewWidget import PreviewGraphicsView
 from LayerManager import LayerManager
 
 class Graphicmaker(QWidget):
-    style_layers_info = pyqtSignal(list)
+    style_layers_info = pyqtSignal(dict)
     
     def __init__(self, folder_path='Assets',part_name = '--', styles = '--'):
         super().__init__()
@@ -21,9 +21,10 @@ class Graphicmaker(QWidget):
         self.part_name = part_name
         self.styles = styles
         self.style_selectors = []
-        self.preview = PreviewLabel() 
+        self.preview = PreviewGraphicsView() 
         self.main_layout = QGridLayout(self)
         self.layer_manager = LayerManager()
+        self.layer_manager.layers_change.connect(self.send_layers_with_selected_style)
         
         
         self.init_ui()
@@ -99,53 +100,42 @@ class Graphicmaker(QWidget):
         if selected_style in paths:
             image_path = paths[selected_style]
             self.style_layers_info.connect(self.layer_manager.set_selected_styles) 
-            self.update_preview_with_image(image_path)
-            self.update_layers_with_selected_style()
+            self.send_layers_with_selected_style()
         else:
             print(f'Error: Style path not found for {selected_style}')
 
     def update_preview_with_image(self, image_path):
         self.preview.update_preview(image_path)
 
-    def update_layers_with_selected_style(self):
+    def send_layers_with_selected_style(self):
         # 获取已经选择的所有部件的图片路径
         selected_styles = [selector.current_style() for selector in self.style_selectors if selector.current_style()]
-        self.style_layers_info.emit(selected_styles)
-        self.layer_manager.update_layers()
         template_name = self.template_combo_box.currentText()
         paths = {part: self.file_manager.get_paths_for_style(template_name, part) for part in selected_styles}
-        composite_image = self.create_composite_image(template_name, selected_styles, paths)
-        self.preview.update_preview(composite_image)  # 更新预览
-    
-    def create_composite_image(self, template_name, selected_styles, _paths):
-        composite_pixmap = QPixmap(192, 192)  # 创建一个新的画布
-        composite_pixmap.fill(Qt.GlobalColor.white)  # 填充白色背景
+        name_for_layers = self.collect_image_paths(template_name, selected_styles, paths)
+        self.style_layers_info.emit(name_for_layers)
+        self.layer_manager.set_selected_styles(name_for_layers)
+        self.layer_manager.update_layers()
 
-        # 逐个绘制已选择的部件
-        painter = QPainter(composite_pixmap)
+    def collect_image_paths(self, template_name, selected_styles, paths):
+        name_for_layers = {}
         for style_name in selected_styles:
-            # find a way to keep the full path for the selected parts to remove this ugly part
             parts = self.file_manager.get_part_names_for_template(template_name)
             all_paths = {}
             for part in parts:
-                paths = self.file_manager.get_paths_for_style(template_name, part)
-                all_paths = {**all_paths, **paths}
-
+                part_paths = self.file_manager.get_paths_for_style(template_name, part)
+                all_paths = {**all_paths, **part_paths}
+            
             if style_name in all_paths:
-                image_paths = all_paths[style_name]  # 根据部件名称获取路径
+                image_paths = all_paths[style_name]
                 for each_path in image_paths:
-                    print(os.fsdecode(each_path))
-                    each_pixmap = QPixmap(os.fsdecode(each_path))  # 加载部件图片
-                    if not each_pixmap.isNull():  # 检查图片是否有效
-                        painter.drawPixmap(0, 0, each_pixmap)  # 将部件图片绘制到画布上
-                    else:
-                        print(f'Error: Invalid image for {style_name}')
+                    path_string = os.fsdecode(each_path)
+                    layer_info = path_string.rfind("\\")
+                    add_layer = path_string[(layer_info + 1):]
+                    name_for_layers[add_layer] = path_string
             else:
                 print(f'Error: Part path not found for {style_name}')
-        painter.end()  # 结束绘制
-
-        composite_image = composite_pixmap.toImage()  # 将 QPixmap 转换为 QImage
-        return composite_image  # 返回合成后的图片对象
+        return name_for_layers
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)

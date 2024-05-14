@@ -1,6 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QListWidget, QListWidgetItem
 from PyQt6.QtCore import pyqtSignal
+from PreviewWidget import PreviewGraphicsView
 class LayerManager(QMainWindow):
     layers_change = pyqtSignal(list)
     def __init__(self):
@@ -30,14 +31,13 @@ class LayerManager(QMainWindow):
         self.lower_button.clicked.connect(self.lower_layer)
         self.layout.addWidget(self.lower_button)
 
-        self.layers = []  # 存储图层信息，每个图层包含图层名和图像路径
+        self.layers = {}  # 存储图层信息，每个图层包含图层名和图像路径
         self.selected_layer_index = None 
+        self.preview = PreviewGraphicsView()
 
 
-    def set_selected_styles(self, selected_styles):
-        self.layers = []  # 清空现有的图层信息
-        for style in selected_styles:
-            self.layers.append({"name": style})
+    def set_selected_styles(self, layers):
+        self.layers = layers
         self.refresh_layers()
 
 
@@ -49,7 +49,7 @@ class LayerManager(QMainWindow):
                     self.refresh_layers()
                     self.layer_list.setCurrentRow(i - 1)
                     break 
-        self.layers_change.emit(self.layers)
+    
 
     def lower_layer(self, selected_style):
         for i, layer in enumerate(self.layers):
@@ -59,17 +59,20 @@ class LayerManager(QMainWindow):
                     self.refresh_layers()
                     self.layer_list.setCurrentRow(i + 1)
                     break
-        self.layers_change.emit(self.layers)
+    
 
     def refresh_layers(self):
         self.layer_list.clear()
-        for layer_info in self.layers:
-            self.layer_list.addItem(layer_info["name"])
+        for layer_name in self.layers.keys():
+            self.layer_list.addItem(layer_name)
+
 
     def set_layer_index(self, index):
         self.selected_layer_index = index
     
     def update_layers(self):
         self.refresh_layers()
+        image_paths = list(self.layers.values())
+        self.preview.update_preview(image_paths)
         self.show()
 
