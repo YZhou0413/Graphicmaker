@@ -1,78 +1,89 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QListWidget, QListWidgetItem
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QListWidget, QListWidgetItem, QAbstractItemView
 from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtGui import QCursor
+from collections import OrderedDict
 from PreviewWidget import PreviewGraphicsView
-class LayerManager(QMainWindow):
-    layers_change = pyqtSignal(list)
+class MyListWidget(QListWidget):
+    itemMoved = pyqtSignal(int, int)  # 自定义信号
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setAcceptDrops(True)
+    def dropEvent(self, event):
+        super().dropEvent(event)
+        from_index = self.currentRow()
+        to_index = self.row(self.itemAt(self.viewport().mapFromGlobal(QCursor.pos()))) if self.itemAt(self.viewport().mapFromGlobal(QCursor.pos())) else -1
+        self.itemMoved.emit(from_index, to_index)
+
+class LayerManager(QWidget):
+    layers_change = pyqtSignal(dict)
     def __init__(self):
         super().__init__()
+        self.layers = OrderedDict()
+        self.selected_layer_index = -1
+        self.init_ui()
 
-        self.setWindowTitle("Layer Manager")
-        self.setGeometry(100, 100, 300, 400)
-        
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-
-        self.layout = QVBoxLayout()
-        self.central_widget.setLayout(self.layout)
-
-        self.layer_list = QListWidget()
-        self.layout.addWidget(self.layer_list)
-
-        self.refresh_button = QPushButton("Refresh")
-        self.refresh_button.clicked.connect(self.refresh_layers)
-        self.layout.addWidget(self.refresh_button)
+    def init_ui(self):
+        self.layer_list = MyListWidget()  
+        self.layer_list.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)  
+        self.layer_list.currentRowChanged.connect(self.set_layer_index)
+        self.layer_list.itemMoved.connect(self.move_layer)  # 绑定自定义信号
 
         self.raise_button = QPushButton("Raise Layer")
-        self.raise_button.clicked.connect(self.raise_layer)
-        self.layout.addWidget(self.raise_button)
-
         self.lower_button = QPushButton("Lower Layer")
+        
+        self.raise_button.clicked.connect(self.raise_layer)
         self.lower_button.clicked.connect(self.lower_layer)
-        self.layout.addWidget(self.lower_button)
-
-        self.layers = {}  # 存储图层信息，每个图层包含图层名和图像路径
-        self.selected_layer_index = None 
+        
+        layout = QVBoxLayout()
+        layout.addWidget(self.layer_list)
+        layout.addWidget(self.raise_button)
+        layout.addWidget(self.lower_button)
+        self.setLayout(layout)
         self.preview = PreviewGraphicsView()
-
 
     def set_selected_styles(self, layers):
         self.layers = layers
         self.refresh_layers()
+        self.update_layers()  # 添加这一行来确保在更新 self.layers 后立即更新 Preview
+
+    def raise_layer(self):
+        if self.selected_layer_index > 0:
+            self.move_layer(self.selected_layer_index, self.selected_layer_index - 1)
+
+    def lower_layer(self):
+        if self.selected_layer_index < len(self.layers) - 1:
+            self.move_layer(self.selected_layer_index, self.selected_layer_index + 1)
 
 
-    def raise_layer(self, selected_style):
-        for i, layer in enumerate(self.layers):
-            if layer["name"] == selected_style:
-                if i > 0:
-                    self.layers[i], self.layers[i - 1] = self.layers[i - 1], self.layers[i]
-                    self.refresh_layers()
-                    self.layer_list.setCurrentRow(i - 1)
-                    break 
-    
+    def move_layer(self, from_index, to_index):
+    # 获取被移动的键值对
+        keys = list(self.layers.keys())
+        values = list(self.layers.values())
 
-    def lower_layer(self, selected_style):
-        for i, layer in enumerate(self.layers):
-            if layer["name"] == selected_style:
-                if i < len(self.layers) - 1:
-                    self.layers[i], self.layers[i + 1] = self.layers[i + 1], self.layers[i]
-                    self.refresh_layers()
-                    self.layer_list.setCurrentRow(i + 1)
-                    break
-    
+        # 交换位置
+        keys[from_index], keys[to_index] = keys[to_index], keys[from_index]
+        values[from_index], values[to_index] = values[to_index], values[from_index]
+
+        # 重建字典
+        self.layers = OrderedDict(zip(keys, values))
+
+        self.refresh_layers()
+        self.layer_list.setCurrentRow(to_index)
+        self.update_layers()
 
     def refresh_layers(self):
         self.layer_list.clear()
         for layer_name in self.layers.keys():
             self.layer_list.addItem(layer_name)
 
-
     def set_layer_index(self, index):
         self.selected_layer_index = index
-    
+
     def update_layers(self):
-        self.refresh_layers()
         image_paths = list(self.layers.values())
         self.preview.update_preview(image_paths)
         self.show()
+
+
 
