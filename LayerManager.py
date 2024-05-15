@@ -19,6 +19,7 @@ class LayerManager(QWidget):
     layers_change = pyqtSignal(dict)
     def __init__(self):
         super().__init__()
+        self.setWindowTitle('Layer Manager')
         self.layers = OrderedDict()
         self.selected_layer_index = -1
         self.init_ui()
@@ -29,16 +30,16 @@ class LayerManager(QWidget):
         self.layer_list.currentRowChanged.connect(self.set_layer_index)
         self.layer_list.itemMoved.connect(self.move_layer)  # 绑定自定义信号
 
-        self.raise_button = QPushButton("Raise Layer")
-        self.lower_button = QPushButton("Lower Layer")
+        self.Lower_button = QPushButton("Lower Layer")
+        self.Raise_button = QPushButton("Raise Layer")
         
-        self.raise_button.clicked.connect(self.raise_layer)
-        self.lower_button.clicked.connect(self.lower_layer)
+        self.Lower_button.clicked.connect(self.raise_layer)
+        self.Raise_button.clicked.connect(self.lower_layer)
         
         layout = QVBoxLayout()
         layout.addWidget(self.layer_list)
-        layout.addWidget(self.raise_button)
-        layout.addWidget(self.lower_button)
+        layout.addWidget(self.Lower_button)
+        layout.addWidget(self.Raise_button)
         self.setLayout(layout)
         self.preview = PreviewGraphicsView()
 
@@ -47,11 +48,11 @@ class LayerManager(QWidget):
         self.refresh_layers()
         self.update_layers()  # 添加这一行来确保在更新 self.layers 后立即更新 Preview
 
-    def raise_layer(self):
+    def lower_layer(self):
         if self.selected_layer_index > 0:
             self.move_layer(self.selected_layer_index, self.selected_layer_index - 1)
 
-    def lower_layer(self):
+    def raise_layer(self):
         if self.selected_layer_index < len(self.layers) - 1:
             self.move_layer(self.selected_layer_index, self.selected_layer_index + 1)
 
