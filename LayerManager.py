@@ -12,7 +12,7 @@ class MyListWidget(QListWidget):
         self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)  
 
-    def dropEvent(self, event: QEvent):
+    def dropEvent(self, event):
         super().dropEvent(event)
         from_index = self.currentRow()
         to_index = self.indexAt(event.position().toPoint()).row() if self.indexAt(event.position().toPoint()).isValid() else -1
@@ -86,20 +86,20 @@ class LayerManager(QWidget):
 
         # 刷新图层预览
         self.refresh_layers()
+        self.layer_list.setCurrentRow(to_index)
         self.update_layers()
 
     # Lower按钮点击事件处理函数
     def lower_layer(self, selected_layer_index):
         to_index = selected_layer_index + 1  # 更新选中图层的索引
         self.move_item_in_dict(selected_layer_index, to_index)
-        self.layer_list.setCurrentRow(to_index)
+        
 
 
     # Raise按钮点击事件处理函数
     def raise_layer(self, selected_layer_index):
         to_index = selected_layer_index - 1  # 更新选中图层的索引
         self.move_item_in_dict(selected_layer_index, to_index)
-        self.layer_list.setCurrentRow(to_index)
 
 
     # 列表项移动事件处理函数
