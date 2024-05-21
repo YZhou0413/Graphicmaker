@@ -32,7 +32,18 @@ class LayerManager(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        self.layer_list = MyListWidget()    
+        self.layer_list = MyListWidget()
+        self.layer_list.setStyleSheet("""
+            QListWidget::item {
+                height: 30px;
+                border: 1px solid #eeeeee; 
+                margin: 2px; 
+                background: #f3f6f4;
+            }
+            QListWidget::item:selected {
+                background: #91A3B0; 
+            }
+        """)    
         self.layer_list.currentRowChanged.connect(self.set_layer_index)
         self.layer_list.itemMoved.connect(self.handle_item_moved)  
 
@@ -116,6 +127,7 @@ class LayerManager(QWidget):
 
     def update_layers(self):
         image_paths = list(self.layers.values())
+        print(list(self.layers.keys()))
         self.preview.update_preview(image_paths)
         self.show()
 
