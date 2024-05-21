@@ -14,7 +14,7 @@ class MyListWidget(QListWidget):
 
     def dropEvent(self, event):
         super().dropEvent(event)
-        from_index = self.currentRow()
+        from_index = self.currentRow() # THIS IS POINTING AT THE TO_INDEX
         to_index = self.indexAt(event.position().toPoint()).row() if self.indexAt(event.position().toPoint()).isValid() else -1
         self.itemMoved.emit(from_index, to_index)
 
