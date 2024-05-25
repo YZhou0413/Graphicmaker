@@ -12,3 +12,20 @@ Style:
 
 
 https://www.riverbankcomputing.com/static/Docs/PyQt6/api/qtwidgets/qabstractitemview.html#DragDropMode
+https://discuss.python.org/t/modulenotfounderror-no-module-named-pyqt5-pyqt6/49658
+
+TODO: Create objects for styles:
+1. class style():
+    part_parent: parent folder = part name (which part of face it is, for layer init)
+    name: file name (deal with dollar sign)
+    path: file path, dollar sign issue
+    Graphic charateristics:
+        Color options:
+        Visiblity:
+        coordinates:(for moving)
+2. Finish MainWindow
+3. Color panel (for individual and link parts together)
+4. location adjustment function (could directly use QGraphicsView)
+5. Export and save
+6. Change BG, change scale, direction of face (vertical flip)
+7. random generator (choose random part from each selector)
