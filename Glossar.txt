@@ -9,4 +9,6 @@ Part:
 Style: 
     refer to the individual style for each Part:
         exp.: Green hair, red hair, long hair, short hair...
-    
+
+
+https://www.riverbankcomputing.com/static/Docs/PyQt6/api/qtwidgets/qabstractitemview.html#DragDropMode
