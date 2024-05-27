@@ -6,7 +6,7 @@ from PyQt6.QtGui import QPixmap, QPainter, QImage, QImageReader
 from PyQt6.QtCore import Qt, pyqtSignal
 import os
 from PartSelect import PartSelector
-from TemplateManager import FileManager
+from FileManager import FileManager
 from PreviewWidget import PreviewGraphicsView
 from LayerManager import LayerManager
 

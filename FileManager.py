@@ -2,8 +2,6 @@ import os
 from PyQt6.QtCore import pyqtSignal, QObject
 
 class FileManager(QObject):
-    templateChanged = pyqtSignal(str)  # define signal for template change
-    partSelected = pyqtSignal(str, str)  # define signal for part change
 
     def __init__(self, folder_path):
         super().__init__()
