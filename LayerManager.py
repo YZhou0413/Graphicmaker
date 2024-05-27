@@ -4,6 +4,8 @@ from PyQt6.QtCore import pyqtSignal, QEvent
 from PyQt6.QtGui import QCursor
 from collections import OrderedDict, deque
 from PreviewWidget import PreviewGraphicsView
+import Style
+
 class MyListWidget(QListWidget):
     itemMoved = pyqtSignal(int, int)
 
@@ -22,7 +24,6 @@ class MyListWidget(QListWidget):
         to_index = self.indexAt(event.position().toPoint()).row() if self.indexAt(event.position().toPoint()).isValid() else -1
         self.itemMoved.emit(self.from_index, to_index)
         event.accept()
-
 
 
 class LayerManager(QWidget):
@@ -70,12 +71,10 @@ class LayerManager(QWidget):
         self.selected_layer_index = index
 
     def set_selected_styles(self, layers):
-        for layer_name in layers.keys():
-            if layer_name not in self.user_defined_order:
-                self.user_defined_order[layer_name] = len(self.user_defined_order)
-        
-        sorted_order = sorted(self.user_defined_order.items(), key=lambda x: x[1])
-        sorted_layers = OrderedDict((layer_name, layers[layer_name]) for layer_name, _ in sorted_order if layer_name in layers)
+        sorted_layers = OrderedDict()
+        for style_name, path in layers.items():
+            new_style = Style.new(path, "part_name", style_name)
+            sorted_layers[style_name] = new_style
         self.layers = sorted_layers
         self.refresh_layers()
 

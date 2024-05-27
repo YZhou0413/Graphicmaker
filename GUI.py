@@ -104,11 +104,10 @@ class Graphicmaker(QWidget):
         # 获取已经选择的所有部件的图片路径
         selected_styles = [selector.current_style() for selector in self.style_selectors if selector.current_style()]
         template_name = self.template_combo_box.currentText()
-        paths = {part: self.file_manager.get_paths_for_style(template_name, part) for part in selected_styles}
-        name_for_layers = self.collect_image_paths(template_name, selected_styles, paths)
+        name_for_layers = self.collect_image_paths(template_name, selected_styles)
         self.style_layers_info.emit(name_for_layers)
 
-    def collect_image_paths(self, template_name, selected_styles, paths):
+    def collect_image_paths(self, template_name, selected_styles):
         name_for_layers = {}
         for style_name in selected_styles:
             parts = self.file_manager.get_part_names_for_template(template_name)
@@ -121,9 +120,10 @@ class Graphicmaker(QWidget):
                 image_paths = all_paths[style_name]
                 for each_path in image_paths:
                     path_string = os.fsdecode(each_path)
-                    layer_info = path_string.rfind("\\")
-                    add_layer = path_string[(layer_info + 1):]
-                    name_for_layers[add_layer] = path_string
+                    layer_info = path_string.split("\\")
+                    style_layer = layer_info[-1]
+                    part_layer = layer_info[-2]
+                    name_for_layers[part_layer] = {style_layer: path_string}
             else:
                 print(f'Error: Part path not found for {style_name}')
         return name_for_layers
