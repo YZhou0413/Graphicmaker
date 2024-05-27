@@ -6,14 +6,10 @@ class PreviewGraphicsView(QGraphicsView):
     def __init__(self):
         super().__init__()
         self.init_ui()
-        self.x = 0
-        self.y = 0
-        self.wx = 0
-        self.wy = 0
         self.edit = False
         
     def init_ui(self):
-        self.setFixedSize(200, 200)
+        self.setFixedSize(250, 250)
         self.setWindowTitle('Preview')
 
         # 创建场景

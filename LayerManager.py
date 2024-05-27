@@ -26,13 +26,13 @@ class MyListWidget(QListWidget):
 
 
 class LayerManager(QWidget):
-    def __init__(self):
+    def __init__(self, preview):
         super().__init__()
         self.setWindowTitle('Layer Manager')
+        self.preview = preview
         self.layers = OrderedDict()
         self.user_defined_order = OrderedDict()
         self.selected_layer_index = -1
-        self.preview = PreviewGraphicsView()
         self.init_ui()
 
     def init_ui(self):
@@ -77,7 +77,6 @@ class LayerManager(QWidget):
         sorted_order = sorted(self.user_defined_order.items(), key=lambda x: x[1])
         sorted_layers = OrderedDict((layer_name, layers[layer_name]) for layer_name, _ in sorted_order if layer_name in layers)
         self.layers = sorted_layers
-        
         self.refresh_layers()
 
     def move_item_in_list(self, from_index, to_index):

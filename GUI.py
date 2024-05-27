@@ -14,20 +14,16 @@ class Graphicmaker(QWidget):
     style_layers_info = pyqtSignal(dict)
     
     
-    def __init__(self, folder_path='Assets',part_name = '--', styles = '--'):
+    def __init__(self, layer_manager, folder_path='Assets',part_name = '--', styles = '--'):
         super().__init__()
         self.setWindowTitle('Graphic Maker')
         self.setGeometry(100, 100, 600, 400)
         self.file_manager = FileManager(folder_path)
         self.part_name = part_name
         self.styles = styles
-        self.style_selectors = []
-        self.preview = PreviewGraphicsView() 
+        self.style_selectors = [] 
         self.main_layout = QGridLayout(self)
-        self.layer_manager = LayerManager()
-
-        
-        
+        self.layer_manager = layer_manager
         self.init_ui()
 
     def init_ui(self):
@@ -100,7 +96,6 @@ class Graphicmaker(QWidget):
 
         if selected_style in paths:
             image_path = paths[selected_style]
-            self.style_layers_info.connect(self.layer_manager.set_selected_styles) 
             self.send_layers_with_selected_style()
         else:
             print(f'Error: Style path not found for {selected_style}')
@@ -112,8 +107,6 @@ class Graphicmaker(QWidget):
         paths = {part: self.file_manager.get_paths_for_style(template_name, part) for part in selected_styles}
         name_for_layers = self.collect_image_paths(template_name, selected_styles, paths)
         self.style_layers_info.emit(name_for_layers)
-        self.layer_manager.set_selected_styles(name_for_layers)
-        self.layer_manager.refresh_layers()
 
     def collect_image_paths(self, template_name, selected_styles, paths):
         name_for_layers = {}
