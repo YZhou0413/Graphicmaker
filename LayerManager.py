@@ -73,7 +73,8 @@ class LayerManager(QWidget):
     def set_selected_styles(self, layers):
         sorted_layers = OrderedDict()
         for part_name, styles_for_part in layers.items():
-            for style_name, style_path in styles_for_part.items():
+            for style_dict in styles_for_part:
+                [(style_name, style_path)] = style_dict.items()
                 new_style = Style(style_path, part_name, style_name)
                 sorted_layers[style_name] = new_style
         self.layers = sorted_layers

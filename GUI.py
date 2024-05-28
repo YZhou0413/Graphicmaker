@@ -9,6 +9,7 @@ from PartSelect import PartSelector
 from FileManager import FileManager
 from PreviewWidget import PreviewGraphicsView
 from LayerManager import LayerManager
+from collections import defaultdict
 
 class Graphicmaker(QWidget):
     style_layers_info = pyqtSignal(dict)
@@ -108,7 +109,7 @@ class Graphicmaker(QWidget):
         self.style_layers_info.emit(name_for_layers)
 
     def collect_image_paths(self, template_name, selected_styles):
-        name_for_layers = {}
+        name_for_layers = defaultdict(list)
         for style_name in selected_styles:
             parts = self.file_manager.get_part_names_for_template(template_name)
             all_paths = {}
@@ -122,8 +123,11 @@ class Graphicmaker(QWidget):
                     path_string = os.fsdecode(each_path)
                     layer_info = path_string.split("\\")
                     style_layer = layer_info[-1]
-                    part_layer = layer_info[-2]
-                    name_for_layers[part_layer] = {style_layer: path_string}
+                    if layer_info[0] == 'None':
+                        part_layer = 'None'
+                    else:
+                        part_layer = layer_info[-2]
+                    name_for_layers[part_layer].append({style_layer: path_string})
             else:
                 print(f'Error: Part path not found for {style_name}')
         return name_for_layers
