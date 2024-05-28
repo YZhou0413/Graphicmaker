@@ -32,7 +32,7 @@ class LayerManager(QWidget):
         self.setWindowTitle('Layer Manager')
         self.preview = preview
         self.layers = OrderedDict()
-        self.user_defined_order = OrderedDict()
+        self.layers_order = [] # depend on what part is clicked first
         self.selected_layer_index = -1
         self.init_ui()
 
@@ -69,16 +69,33 @@ class LayerManager(QWidget):
 
     def set_layer_index(self, index):
         self.selected_layer_index = index
+    def add_part_to_order(self, part_name):
+        if part_name not in self.layers_order:
+            self.layers_order.append(part_name)
 
-    def set_selected_styles(self, layers):
+    def set_selected_styles(self, new_layers):
         sorted_layers = OrderedDict()
-        for part_name, styles_for_part in layers.items():
+        for part_name, styles_for_part in new_layers.items():
             for style_dict in styles_for_part:
                 [(style_name, style_path)] = style_dict.items()
                 new_style = Style(style_path, part_name, style_name)
                 sorted_layers[style_name] = new_style
-        self.layers = sorted_layers
+        self.update_layers(sorted_layers)
         self.refresh_layers()
+
+    def update_layers(self, new_layers):
+        for style_name, style in new_layers.items():
+            if style_name in self.layers.keys():
+                pass
+            else:
+                if style.part_name in self.layers_order:
+                    temp_dict = {k: v for k, v in self.layers.items() if v.part_name != style.part_name}
+                    temp_dict[style_name] = style
+                    self.layers = temp_dict
+                else:
+                    self.layers.update((style_name, style))
+        self.layers = {k: v for k, v in sorted(self.layers.items(), key=lambda item: self.layers_order.index(item[1].part_name))}
+
 
     def move_item_in_list(self, from_index, to_index):
         if from_index == to_index \
@@ -109,7 +126,6 @@ class LayerManager(QWidget):
         values[dict_from_index], values[dict_to_index] = values[dict_to_index], values[dict_from_index]
 
         self.layers = OrderedDict(zip(keys, values))
-        self.user_defined_order = OrderedDict(zip(keys, range(len(keys))))
 
         self.refresh_layers()
         self.layer_list.setCurrentRow(to_index)

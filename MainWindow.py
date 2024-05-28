@@ -31,6 +31,7 @@ class Ui_MainWindow(QMainWindow):
                              ,styles='--')
         self.setCentralWidget(self.selectors)
         self.selectors.style_layers_info.connect(self.L_manager.set_selected_styles)
+        self.selectors.part_click.connect(self.L_manager.add_part_to_order)
 
         #set up dock widgets(frames)
         self.l_dock = QDockWidget(self)

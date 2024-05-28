@@ -13,6 +13,7 @@ from collections import defaultdict
 
 class Graphicmaker(QWidget):
     style_layers_info = pyqtSignal(dict)
+    part_click = pyqtSignal(str)
     
     
     def __init__(self, layer_manager, folder_path='Assets',part_name = '--', styles = '--'):
@@ -94,7 +95,7 @@ class Graphicmaker(QWidget):
         print(f'Selected part: {part_name}, Style: {selected_style}')
         template_name = self.template_combo_box.currentText()
         paths = self.file_manager.get_paths_for_style(template_name, part_name)
-
+        self.part_click.emit(part_name)
         if selected_style in paths:
             image_path = paths[selected_style]
             self.send_layers_with_selected_style()
