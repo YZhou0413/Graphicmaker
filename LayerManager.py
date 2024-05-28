@@ -4,7 +4,7 @@ from PyQt6.QtCore import pyqtSignal, QEvent
 from PyQt6.QtGui import QCursor
 from collections import OrderedDict, deque
 from PreviewWidget import PreviewGraphicsView
-import Style
+from Style import Style
 
 class MyListWidget(QListWidget):
     itemMoved = pyqtSignal(int, int)
@@ -72,9 +72,10 @@ class LayerManager(QWidget):
 
     def set_selected_styles(self, layers):
         sorted_layers = OrderedDict()
-        for style_name, path in layers.items():
-            new_style = Style.new(path, "part_name", style_name)
-            sorted_layers[style_name] = new_style
+        for part_name, styles_for_part in layers.items():
+            for style_name, style_path in styles_for_part.items():
+                new_style = Style(style_path, part_name, style_name)
+                sorted_layers[style_name] = new_style
         self.layers = sorted_layers
         self.refresh_layers()
 
@@ -137,7 +138,7 @@ class LayerManager(QWidget):
         image_paths = deque()
         for layer_name in reversed(list(self.layers.keys())):
             self.layer_list.addItem(layer_name)
-            image_paths.appendleft(self.layers[layer_name])
+            image_paths.appendleft(self.layers[layer_name].path)
             self.preview.update_preview(image_paths)
             self.show()
 
