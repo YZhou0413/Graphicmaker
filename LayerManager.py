@@ -74,28 +74,33 @@ class LayerManager(QWidget):
             self.layers_order.append(part_name)
 
     def set_selected_styles(self, new_layers):
-        sorted_layers = OrderedDict()
-        for part_name, styles_for_part in new_layers.items():
-            for style_dict in styles_for_part:
-                [(style_name, style_path)] = style_dict.items()
-                new_style = Style(style_path, part_name, style_name)
-                sorted_layers[style_name] = new_style
-        self.update_layers(sorted_layers)
+        replacing_styles = self.get_difference_between_dicts(self.layers, new_layers)
+        already_selected_parts = [k.part_name for k in self.layers.values()]
+        if list(replacing_styles.keys())[0] in already_selected_parts:
+            for replacing_style in replacing_styles.items():
+                pass # self.replace_style(replacing_style)
+        else:
+            for part_name, styles_for_part in replacing_styles.items():
+                for style_dict in styles_for_part:
+                    [(style_name, style_path)] = style_dict.items()
+                    new_style = Style(style_path, part_name, style_name)
+                    self.layers[style_name] = new_style
         self.refresh_layers()
 
-    def update_layers(self, new_layers):
-        for style_name, style in new_layers.items():
-            if style_name in self.layers.keys():
-                pass
-            else:
-                if style.part_name in self.layers_order:
-                    temp_dict = {k: v for k, v in self.layers.items() if v.part_name != style.part_name}
-                    temp_dict[style_name] = style
-                    self.layers = temp_dict
+    def get_difference_between_dicts(self, main, incoming):
+        sum_diff = {}
+        for part_name, incoming_styles in incoming.items():
+            tmp = []
+            for incoming_style in incoming_styles:
+                if list(incoming_style.keys())[0] in list(main.keys()):
+                    pass
                 else:
-                    self.layers.update((style_name, style))
-        self.layers = {k: v for k, v in sorted(self.layers.items(), key=lambda item: self.layers_order.index(item[1].part_name))}
+                    tmp.append(incoming_style)
+                    sum_diff[part_name] = tmp
+        return sum_diff
 
+    def replace_style(self, new_style):
+        pass
 
     def move_item_in_list(self, from_index, to_index):
         if from_index == to_index \
