@@ -78,7 +78,7 @@ class LayerManager(QWidget):
         already_selected_parts = [k.part_name for k in self.layers.values()]
         if list(replacing_styles.keys())[0] in already_selected_parts:
             for replacing_style in replacing_styles.items():
-                pass # self.replace_style(replacing_style)
+                self.replace_style(replacing_style)
         else:
             for part_name, styles_for_part in replacing_styles.items():
                 for style_dict in styles_for_part:
@@ -100,15 +100,51 @@ class LayerManager(QWidget):
         return sum_diff
 
     def replace_style(self, new_style):
-        pass
+        n_part_name = new_style[0]
+        list_keys = list(self.layers.keys())
+        list_for_i = list(self.layers.values())
+        index_needed=[]
+        for i, item in enumerate(list_for_i):
+            if item.part_name == n_part_name:
+                index_needed.append(i)          
+        style_list = new_style[1]
+
+        if len(style_list) > len(index_needed): 
+            for i, style_dict in enumerate(style_list):
+                if i < len(index_needed):
+                    [(name, path)] = style_dict.items()
+                    list_keys[index_needed[i]] = name
+                    list_for_i[index_needed[i]] = Style(path, n_part_name, name)
+                else:
+                    insert_position = index_needed[-1] + 1
+                    [(name, path)] = style_dict.items()
+                    list_keys.insert(insert_position, name)
+                    list_for_i.insert(insert_position, Style(path, n_part_name, name))
+        elif len(style_list) < len(index_needed):
+            for i, style_dict in enumerate(style_list):
+                [(name, path)] = style_dict.items()
+                list_keys[index_needed[i]] = name
+                list_for_i[index_needed[i]] = Style(path, n_part_name, name)
+            del list_keys[len(style_list):]
+            del list_for_i[len(style_list):]
+        else:
+            for i, style_dict in enumerate(style_list):
+                [(name, path)] = style_dict.items()
+                list_keys[index_needed[i]] = name
+                list_for_i[index_needed[i]] = Style(path, n_part_name, name)
+        self.layers = OrderedDict(zip(list_keys, list_for_i))
+
+                
+
 
     def move_item_in_list(self, from_index, to_index):
         if from_index == to_index \
                 or from_index < 0 \
                 or to_index < 0 \
-                or from_index >= self.layer_list.count() \
-                or to_index >= self.layer_list.count():
+                or from_index >= self.layer_list.count():
             return
+        elif to_index >= self.layer_list.count():
+            to_index = int(self.layer_list.count() - 1)
 
         item = self.layer_list.takeItem(from_index)
         self.layer_list.insertItem(to_index, item)
@@ -122,11 +158,9 @@ class LayerManager(QWidget):
         values = list(self.layers.values())
         if to_index < 0 or to_index >= len(keys):
             return
-
         dict_from_index = len(keys) - 1 - from_index
         dict_to_index = len(keys) - 1 - to_index
 
-        # 交换键和值
         keys[dict_from_index], keys[dict_to_index] = keys[dict_to_index], keys[dict_from_index]
         values[dict_from_index], values[dict_to_index] = values[dict_to_index], values[dict_from_index]
 
