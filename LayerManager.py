@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QListWidget, QListWidgetItem, QAbstractItemView
+from PyQt6.QtWidgets import QLabel, QMainWindow, QVBoxLayout, QWidget, QPushButton, QListWidget, QListWidgetItem, QAbstractItemView
 from PyQt6.QtCore import pyqtSignal, QEvent
 from PyQt6.QtGui import QCursor
 from collections import OrderedDict, deque
@@ -37,6 +37,7 @@ class LayerManager(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        Titel_label = QLabel("Layer Manager")
         self.layer_list = MyListWidget()
         self.layer_list.setStyleSheet("""
             QListWidget::item {
@@ -62,6 +63,8 @@ class LayerManager(QWidget):
         self.raise_button.clicked.connect(lambda: self.raise_layer(self.selected_layer_index))
         
         layout = QVBoxLayout()
+        self.setFixedSize(220, 400)
+        layout.addWidget(Titel_label)
         layout.addWidget(self.layer_list)
         layout.addWidget(self.lower_button)
         layout.addWidget(self.raise_button)
