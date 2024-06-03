@@ -23,7 +23,6 @@ class ColorSlider(QSlider):
             x = int((i - self.minimum()) / (self.maximum() - self.minimum()) * rect.width())
             painter.drawLine(x, 0, x, rect.height())
 
-        # 绘制滑块颜色
         slider_position = int((self.value() - self.minimum()) / (self.maximum() - self.minimum()) * rect.width())
         handle_color = self.color_func(self.value())
         handle_radius = 7
@@ -53,7 +52,7 @@ class ColorAdjuster(QWidget):
         self.alpha_slider = QSlider(Qt.Orientation.Horizontal)
         self.alpha_slider.setMinimum(0)
         self.alpha_slider.setMaximum(100)
-        self.alpha_slider.setValue(100)
+        self.alpha_slider.setValue(50)
         self.alpha_slider.valueChanged.connect(self.update_color_display)
 
         # 创建透明度输入框

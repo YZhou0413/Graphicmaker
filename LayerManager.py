@@ -1,7 +1,7 @@
 import sys
-from PyQt6.QtWidgets import QLabel, QMainWindow, QVBoxLayout, QWidget, QPushButton, QListWidget, QListWidgetItem, QAbstractItemView
-from PyQt6.QtCore import pyqtSignal, QEvent
-from PyQt6.QtGui import QCursor
+from PyQt6.QtWidgets import *
+from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtGui import QCursor, QFont
 from collections import OrderedDict, deque
 from PreviewWidget import PreviewGraphicsView
 from Style import Style
@@ -24,6 +24,49 @@ class MyListWidget(QListWidget):
         to_index = self.indexAt(event.position().toPoint()).row() if self.indexAt(event.position().toPoint()).isValid() else -1
         self.itemMoved.emit(self.from_index, to_index)
         event.accept()
+
+class CustomListWidgetItem(QWidget):
+    def __init__(self, number, a, main_text, parent=None):
+        super().__init__(parent)
+        
+        # 标签和复选框
+        self.number_label = QLabel(str(number))
+        self.a_label = QLabel(f"{a}")
+        self.main_text_label = QLabel(main_text)
+        self.checkbox = QCheckBox()
+
+        small_font = QFont()
+        small_font.setPointSize(7)
+
+        large_font = QFont()
+        large_font.setPointSize(10) 
+
+        self.a_label.setFont(small_font)
+        self.main_text_label.setFont(large_font)
+        
+        self.separator = QFrame()
+        self.separator.setFrameShape(QFrame.Shape.VLine)
+        self.separator.setFrameShadow(QFrame.Shadow.Sunken)
+        
+        
+        self.number_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.a_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.main_text_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        
+        # 创建垂直布局，中间的标签
+        middle_layout = QVBoxLayout()
+        middle_layout.addWidget(self.a_label)
+        middle_layout.addWidget(self.main_text_label)
+        
+        # 创建水平布局，左侧的数字，中间的标签和右侧的复选框
+        layout = QHBoxLayout()
+        layout.addWidget(self.number_label)
+        layout.addWidget(self.separator)
+        layout.addLayout(middle_layout)
+        layout.addStretch()
+        layout.addWidget(self.checkbox)
+        
+        self.setLayout(layout)
 
 
 class LayerManager(QWidget):
@@ -69,6 +112,10 @@ class LayerManager(QWidget):
         layout.addWidget(self.lower_button)
         layout.addWidget(self.raise_button)
         self.setLayout(layout)
+
+    def clear_layers_template_change(self, template):
+        self.layers = OrderedDict()
+        self.refresh_layers()
 
     def set_layer_index(self, index):
         self.selected_layer_index = index
@@ -195,11 +242,17 @@ class LayerManager(QWidget):
     def refresh_layers(self):
         self.layer_list.clear()
         image_paths = deque()
-        for layer_name in reversed(list(self.layers.keys())):
-            self.layer_list.addItem(layer_name)
-            image_paths.appendleft(self.layers[layer_name].path)
-            self.preview.update_preview(image_paths)
-            self.show()
+        if self.layers:
+            for i, (layer_name, layer_data) in enumerate(reversed(list(self.layers.items()))):
+                item = QListWidgetItem(self.layer_list)
+                widget_item = CustomListWidgetItem(i + 1, layer_data.part_name, layer_data.style_name)
+                item.setSizeHint(widget_item.sizeHint())
+                self.layer_list.setItemWidget(item, widget_item)
+                image_paths.appendleft(self.layers[layer_name].path)
+                self.preview.update_preview(image_paths)
+                self.show()
+        else:
+            self.preview.clear_preview()
 
 
 

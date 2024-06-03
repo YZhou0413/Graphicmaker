@@ -29,6 +29,11 @@ class PreviewGraphicsView(QGraphicsView):
         self.background_item = QGraphicsPixmapItem(gray_image)
         self.background_item.setZValue(-1)  # 将背景图像放置在所有图像项的下方
         self.scene.addItem(self.background_item)
+    
+    def clear_preview(self):
+        for item in self.image_items:
+            self.scene.removeItem(item)
+        self.image_items.clear()
 
     def update_preview(self, image_paths):
         # Remove existing image items

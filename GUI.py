@@ -14,7 +14,7 @@ from collections import defaultdict
 class Graphicmaker(QWidget):
     style_layers_info = pyqtSignal(dict)
     part_click = pyqtSignal(str)
-    
+    change_template = pyqtSignal(str)
     
     def __init__(self, layer_manager, folder_path='Assets',part_name = '--', styles = '--'):
         super().__init__()
@@ -60,6 +60,7 @@ class Graphicmaker(QWidget):
         self.clear_style_selectors()
         self.init_style_selectors()
         self.update_style_selectors(template_name)
+        self.change_template.emit(template_name)
 
     def clear_style_selectors(self):
         for i in self.style_selectors:
