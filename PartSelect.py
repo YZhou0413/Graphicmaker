@@ -10,7 +10,7 @@ class PartSelector(QWidget):
         self.styles = {}
         self.block_layout = QVBoxLayout()
         self.setup_ui()
-        
+        self.last_clicked_item = None
 
     def setup_ui(self):
         self.setLayout(self.block_layout)
@@ -28,9 +28,13 @@ class PartSelector(QWidget):
         self.block_layout.addWidget(self.list_widget)
 
     def react_item_click(self, item):
-        if isinstance(item, QListWidgetItem):  # 确保 item 是 QListWidgetItem 类型
-            selected_style = item.data(0)  # 获取所选项的文本
-            self.style_chosen.emit(self.part_name, selected_style)  # 发送部件选择信号
+        if isinstance(item, QListWidgetItem):
+            if item != self.last_clicked_item:
+                selected_style = item.data(0)
+                self.style_chosen.emit(self.part_name, selected_style)
+                self.last_clicked_item = item
+            else:
+                pass
         else:
             print("Invalid item type:", type(item))
 
