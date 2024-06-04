@@ -37,6 +37,11 @@ class PartSelector(QWidget):
                 pass
         else:
             print("Invalid item type:", type(item))
+    
+    def clear_item_select(self):
+        if self.list_widget.selectedItems():
+            self.list_widget.clearSelection()
+            self.list_widget.setCurrentItem(None)
 
     def set_text(self, text):
         

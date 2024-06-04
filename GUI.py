@@ -96,8 +96,7 @@ class Graphicmaker(QWidget):
     def clear_selected(self):
         print("clear requested")
         for style_selector in self.style_selectors:
-                if style_selector.list_widget.selectedItems():
-                    style_selector.list_widget.clearSelection()
+            style_selector.clear_item_select()
         self.style_layers_info.emit({})
         print("sent empty dict")
         

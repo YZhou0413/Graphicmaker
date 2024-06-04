@@ -54,3 +54,6 @@ class PreviewGraphicsView(QGraphicsView):
         
         self.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
         self.show()
+
+    def add_overlay(self):
+        pass

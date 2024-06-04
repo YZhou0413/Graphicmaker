@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QSlider, QLineEdit, QHBoxLayout
 from PyQt6.QtGui import QColor, QPalette, QIntValidator, QPixmap, QPainter, QBrush, QPen
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 
 class ColorSlider(QSlider):
     def __init__(self, color_func, *args, **kwargs):
@@ -34,8 +34,13 @@ class ColorSlider(QSlider):
         painter.end()
 
 class ColorAdjuster(QWidget):
+    hsba_changed = pyqtSignal(int, int, int, int)
     def __init__(self):
         super().__init__()
+        self.hue_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
+        self.saturation_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
+        self.brightness_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
+        self.alpha_slider.valueChanged.connect(self.emit_color_value)
         self.initUI()
 
     def initUI(self):
@@ -44,7 +49,7 @@ class ColorAdjuster(QWidget):
         layout.setContentsMargins(2, 0, 2, 2)
         # 创建滑动条和标签
         self.hue_slider = self.create_slider("Hue", 0, 359, self.hue_color)
-        self.lightness_slider = self.create_slider("Lightness", 0, 255, self.lightness_color)
+        self.brightness_slider = self.create_slider("Lightness", 0, 255, self.lightness_color)
         self.saturation_slider = self.create_slider("Saturation", 0, 255, self.saturation_color)
 
         # 创建透明度滑动条
@@ -66,7 +71,7 @@ class ColorAdjuster(QWidget):
         alpha_layout.addWidget(self.alpha_edit, 1)
 
         layout.addWidget(self.hue_slider)
-        layout.addWidget(self.lightness_slider)
+        layout.addWidget(self.brightness_slider)
         layout.addWidget(self.saturation_slider)
         layout.addLayout(alpha_layout)
 
@@ -103,16 +108,16 @@ class ColorAdjuster(QWidget):
         return QColor.fromHsl(self.hue_slider.findChild(QSlider).value(), self.saturation_slider.findChild(QSlider).value(), value)
 
     def saturation_color(self, value):
-        return QColor.fromHsl(self.hue_slider.findChild(QSlider).value(), value, self.lightness_slider.findChild(QSlider).value())
+        return QColor.fromHsl(self.hue_slider.findChild(QSlider).value(), value, self.brightness_slider.findChild(QSlider).value())
 
     def update_color_display(self):
         hue = self.hue_slider.findChild(QSlider).value()
-        lightness = self.lightness_slider.findChild(QSlider).value()
+        brightness = self.brightness_slider.findChild(QSlider).value()
         saturation = self.saturation_slider.findChild(QSlider).value()
         alpha = int(self.alpha_slider.value() * 255 / 100)
 
         color = QColor()
-        color.setHsl(hue, saturation, lightness, alpha)
+        color.setHsl(hue, saturation, brightness, alpha)
 
         palette = self.color_display.palette()
         palette.setColor(QPalette.ColorRole.Window, color)
@@ -127,6 +132,15 @@ class ColorAdjuster(QWidget):
             alpha_value = int(alpha_text)
             if 0 <= alpha_value <= 100:
                 self.alpha_slider.setValue(alpha_value)
+    
+    
+    
+    def emit_color_value(self):
+        hue = self.hue_slider.findChild(QSlider).value()
+        saturation = self.saturation_slider.findChild(QSlider).value()
+        brightness = self.brightness_slider.findChild(QSlider).value()
+        alpha = self.alpha_slider.value()
+        self.hsba_changed.emit(hue, saturation, brightness, alpha)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
