@@ -16,7 +16,6 @@ class MyListWidget(QListWidget):
         self.from_Index = -1
 
     def dragMoveEvent(self, event):
-        # 记录开始拖动的项的索引
         self.from_index = self.currentRow()
         event.accept()
 
@@ -29,7 +28,6 @@ class CustomListWidgetItem(QWidget):
     def __init__(self, number, a, main_text, parent=None):
         super().__init__(parent)
         
-        # 标签和复选框
         self.number_label = QLabel(str(number))
         self.a_label = QLabel(f"{a}")
         self.main_text_label = QLabel(main_text)
@@ -70,6 +68,7 @@ class CustomListWidgetItem(QWidget):
 
 
 class LayerManager(QWidget):
+    clear_all_requested = pyqtSignal()
     def __init__(self, preview):
         super().__init__()
         self.setWindowTitle('Layer Manager')
@@ -99,42 +98,54 @@ class LayerManager(QWidget):
 
         self.lower_button = QPushButton("Lower Layer")
         self.raise_button = QPushButton("Raise Layer")
+        self.clear_button = QPushButton("Clear all")
         self.raise_button.setEnabled(False)
         self.lower_button.setEnabled(False)
+        self.clear_button.setEnabled(False)
         
         self.lower_button.clicked.connect(lambda: self.lower_layer(self.selected_layer_index))
         self.raise_button.clicked.connect(lambda: self.raise_layer(self.selected_layer_index))
+        self.clear_button.clicked.connect(lambda: self.clear_layers_template_change(self))
         
         layout = QVBoxLayout()
+        button_layout = QGridLayout()
+        button_layout.addWidget(self.lower_button, 0, 0)
+        button_layout.addWidget(self.raise_button, 0, 1)
+        button_layout.addWidget(self.clear_button, 1, 0, 1, 2)
         self.setFixedSize(220, 400)
         layout.addWidget(Titel_label)
         layout.addWidget(self.layer_list)
-        layout.addWidget(self.lower_button)
-        layout.addWidget(self.raise_button)
+        layout.addLayout(button_layout)
+
         self.setLayout(layout)
 
     def clear_layers_template_change(self, template):
-        self.layers = OrderedDict()
+        self.layers.clear()
         self.refresh_layers()
+        self.clear_all_requested.emit()
 
     def set_layer_index(self, index):
         self.selected_layer_index = index
+
     def add_part_to_order(self, part_name):
         if part_name not in self.layers_order:
             self.layers_order.append(part_name)
 
     def set_selected_styles(self, new_layers):
-        replacing_styles = self.get_difference_between_dicts(self.layers, new_layers)
-        already_selected_parts = [k.part_name for k in self.layers.values()]
-        if list(replacing_styles.keys())[0] in already_selected_parts:
-            for replacing_style in replacing_styles.items():
-                self.replace_style(replacing_style)
-        else:
-            for part_name, styles_for_part in replacing_styles.items():
-                for style_dict in styles_for_part:
-                    [(style_name, style_path)] = style_dict.items()
-                    new_style = Style(style_path, part_name, style_name)
-                    self.layers[style_name] = new_style
+        if not new_layers:
+            self.layers.clear()
+        else: 
+            replacing_styles = self.get_difference_between_dicts(self.layers, new_layers)
+            already_selected_parts = [k.part_name for k in self.layers.values()]
+            if list(replacing_styles.keys())[0] in already_selected_parts:
+                for replacing_style in replacing_styles.items():
+                    self.replace_style(replacing_style)
+            else:
+                for part_name, styles_for_part in replacing_styles.items():
+                    for style_dict in styles_for_part:
+                        [(style_name, style_path)] = style_dict.items()
+                        new_style = Style(style_path, part_name, style_name)
+                        self.layers[style_name] = new_style
         self.refresh_layers()
 
     def get_difference_between_dicts(self, main, incoming):
@@ -183,10 +194,7 @@ class LayerManager(QWidget):
                 list_keys[index_needed[i]] = name
                 list_for_i[index_needed[i]] = Style(path, n_part_name, name)
         self.layers = OrderedDict(zip(list_keys, list_for_i))
-
-                
-
-
+              
     def move_item_in_list(self, from_index, to_index):
         if from_index == to_index \
                 or from_index < 0 \
@@ -194,10 +202,13 @@ class LayerManager(QWidget):
                 or from_index >= self.layer_list.count():
             return
         elif to_index >= self.layer_list.count():
-            to_index = int(self.layer_list.count() - 1)
+            to_index = self.layer_list.count() - 1
 
         item = self.layer_list.takeItem(from_index)
+        widget = self.layer_list.itemWidget(item)
+
         self.layer_list.insertItem(to_index, item)
+        self.layer_list.setItemWidget(item, widget)
         self.layer_list.setCurrentRow(to_index)
 
         self.move_item_in_dict(from_index, to_index)
@@ -235,9 +246,11 @@ class LayerManager(QWidget):
         if current_item is None:
             self.raise_button.setEnabled(False)
             self.lower_button.setEnabled(False)
+            self.clear_button.setEnabled(False)
         else:
             self.raise_button.setEnabled(True)
             self.lower_button.setEnabled(True)
+            self.clear_button.setEnabled(True)
 
     def refresh_layers(self):
         self.layer_list.clear()
@@ -253,6 +266,8 @@ class LayerManager(QWidget):
                 self.show()
         else:
             self.preview.clear_preview()
+
+
 
 
 

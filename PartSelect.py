@@ -60,5 +60,6 @@ class PartSelector(QWidget):
             
     def current_style(self):
         return self.list_widget.currentItem().text() if self.list_widget.currentItem() else None
+    
 
 

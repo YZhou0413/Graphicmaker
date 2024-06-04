@@ -93,6 +93,14 @@ class Graphicmaker(QWidget):
             else:
                 break
 
+    def clear_selected(self):
+        print("clear requested")
+        for style_selector in self.style_selectors:
+                if style_selector.list_widget.selectedItems():
+                    style_selector.list_widget.clearSelection()
+        self.style_layers_info.emit({})
+        print("sent empty dict")
+        
 
     def react_style_selected(self, part_name, selected_style):
         print(f'Selected part: {part_name}, Style: {selected_style}')
