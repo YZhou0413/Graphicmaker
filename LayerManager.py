@@ -25,6 +25,7 @@ class MyListWidget(QListWidget):
         event.accept()
 
 class CustomListWidgetItem(QWidget):
+    color_text = pyqtSignal(str)
     def __init__(self, number, a, main_text, parent=None):
         super().__init__(parent)
         
@@ -32,6 +33,7 @@ class CustomListWidgetItem(QWidget):
         self.a_label = QLabel(f"{a}")
         self.main_text_label = QLabel(main_text)
         self.checkbox = QCheckBox()
+        self.checkbox.stateChanged.connect(self.update_color_layers)
 
         small_font = QFont()
         small_font.setPointSize(7)
@@ -66,9 +68,12 @@ class CustomListWidgetItem(QWidget):
         
         self.setLayout(layout)
 
+    def update_color_layers(self):
+        self.color_text.emit(self.main_text_label.text())
 
 class LayerManager(QWidget):
     clear_all_requested = pyqtSignal()
+    update_preview_dict = pyqtSignal(OrderedDict)
     def __init__(self, preview):
         super().__init__()
         self.setWindowTitle('Layer Manager')
@@ -76,6 +81,7 @@ class LayerManager(QWidget):
         self.layers = OrderedDict()
         self.layers_order = [] # depend on what part is clicked first
         self.selected_layer_index = -1
+        self.current_colored_styles = []
         self.init_ui()
 
     def init_ui(self):
@@ -254,19 +260,32 @@ class LayerManager(QWidget):
 
     def refresh_layers(self):
         self.layer_list.clear()
-        image_paths = deque()
         if self.layers:
             for i, (layer_name, layer_data) in enumerate(reversed(list(self.layers.items()))):
                 item = QListWidgetItem(self.layer_list)
                 widget_item = CustomListWidgetItem(i + 1, layer_data.part_name, layer_data.style_name)
+                widget_item.color_text.connect(self.handle_color_change_list)
                 item.setSizeHint(widget_item.sizeHint())
                 self.layer_list.setItemWidget(item, widget_item)
-                image_paths.appendleft(self.layers[layer_name].path)
-                self.preview.update_preview(image_paths)
-                self.show()
+                self.update_preview_dict.emit(self.layers)
         else:
             self.preview.clear_preview()
+    
+    def handle_color_change_list(self, layer_name_for_cAdj):
+        if layer_name_for_cAdj:
+            if layer_name_for_cAdj in self.current_colored_styles:
+                self.current_colored_styles.remove(layer_name_for_cAdj)
+            else:
+                self.current_colored_styles.append(layer_name_for_cAdj)
 
+
+    def update_color_adjustments(self, hue, saturation, brightness, alpha):
+        if self.current_colored_styles:
+            for colored_style in self.current_colored_styles:
+                for key, style_obj in self.layers.items():
+                    if key == colored_style:
+                        style_obj.set_color_adjustments(hue, saturation, brightness, alpha)
+            self.refresh_layers()
 
 
 

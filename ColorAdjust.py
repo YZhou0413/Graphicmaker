@@ -37,13 +37,6 @@ class ColorAdjuster(QWidget):
     hsba_changed = pyqtSignal(int, int, int, int)
     def __init__(self):
         super().__init__()
-        self.hue_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
-        self.saturation_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
-        self.brightness_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
-        self.alpha_slider.valueChanged.connect(self.emit_color_value)
-        self.initUI()
-
-    def initUI(self):
         layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(2, 0, 2, 2)
@@ -57,7 +50,7 @@ class ColorAdjuster(QWidget):
         self.alpha_slider = QSlider(Qt.Orientation.Horizontal)
         self.alpha_slider.setMinimum(0)
         self.alpha_slider.setMaximum(100)
-        self.alpha_slider.setValue(50)
+        self.alpha_slider.setValue(100)
         self.alpha_slider.valueChanged.connect(self.update_color_display)
 
         # 创建透明度输入框
@@ -84,11 +77,17 @@ class ColorAdjuster(QWidget):
         self.setLayout(layout)
         self.setFixedSize(230, self.sizeHint().height())
 
+        self.hue_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
+        self.saturation_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
+        self.brightness_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
+        self.alpha_slider.valueChanged.connect(self.emit_color_value)
+
     def create_slider(self, name, min_val, max_val, color_func):
         label = QLabel(name)
         slider = ColorSlider(color_func, Qt.Orientation.Horizontal)
         slider.setMinimum(min_val)
         slider.setMaximum(max_val)
+        slider.setValue(max_val)
         slider.valueChanged.connect(self.update_color_display)
 
         setattr(self, name.lower() + '_slider', slider)
@@ -139,7 +138,7 @@ class ColorAdjuster(QWidget):
         hue = self.hue_slider.findChild(QSlider).value()
         saturation = self.saturation_slider.findChild(QSlider).value()
         brightness = self.brightness_slider.findChild(QSlider).value()
-        alpha = self.alpha_slider.value()
+        alpha = int(self.alpha_slider.value() * 255 / 100)
         self.hsba_changed.emit(hue, saturation, brightness, alpha)
 
 if __name__ == "__main__":

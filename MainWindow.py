@@ -33,6 +33,9 @@ class Ui_MainWindow(QMainWindow):
         self.selectors.part_click.connect(self.L_manager.add_part_to_order)
         self.selectors.change_template.connect(self.L_manager.clear_layers_template_change)
         self.L_manager.clear_all_requested.connect(self.selectors.clear_selected)
+        self.L_manager.update_preview_dict.connect(self.P_Widget.update_preview)
+        self.C_Adjuster.hsba_changed.connect(self.L_manager.update_color_adjustments)
+        
 
 
         self.r_dock = QDockWidget(self)
