@@ -49,7 +49,7 @@ class CustomListWidgetItem(QWidget):
         small_font.setPointSize(7)
 
         large_font = QFont()
-        large_font.setPointSize(10) 
+        large_font.setPointSize(9) 
 
         self.a_label.setFont(small_font)
         self.main_text_label.setFont(large_font)

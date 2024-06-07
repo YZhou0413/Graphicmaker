@@ -7,7 +7,7 @@ class ColorSlider(QSlider):
     def __init__(self, color_func, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.color_func = color_func
-        self.setFixedHeight(8)  # 设置滑动条的高度
+        self.setFixedHeight(8)
 
     def paintEvent(self, event):
         super().paintEvent(event)
@@ -15,13 +15,10 @@ class ColorSlider(QSlider):
         painter = QPainter(self)
         rect = self.rect()
 
-        # Fill the entire widget with a solid color to cover any gaps
         painter.fillRect(rect, self.palette().window())
 
-        # Calculate the width of each rectangle
         rect_width = rect.width() / (self.maximum() - self.minimum())
 
-        # Draw the gradient slider
         for i in range(self.minimum(), self.maximum() + 1):
             color = self.color_func(i)
             painter.setPen(QPen(color))
@@ -29,7 +26,6 @@ class ColorSlider(QSlider):
             x = int((i - self.minimum()) * rect_width)
             painter.drawRect(x, 0, int(rect_width), rect.height())
 
-        # Draw the handle of the slider
         slider_position = int((self.value() - self.minimum()) * rect_width)
         handle_color = self.color_func(self.value())
         handle_radius = 7
@@ -41,8 +37,6 @@ class ColorSlider(QSlider):
         painter.end()
 
 
-
-
 class ColorAdjuster(QWidget):
     hsba_changed = pyqtSignal(int, int, int, int)
     def __init__(self):
@@ -50,12 +44,11 @@ class ColorAdjuster(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(2, 0, 2, 2)
-        # 创建滑动条和标签
+
         self.hue_slider = self.create_slider("Hue", 0, 359, self.hue_color)
-        self.brightness_slider = self.create_slider("Lightness", 0, 100, self.lightness_color)
+        self.brightness_slider = self.create_slider("Lightness", 0, 75, self.lightness_color)
         self.saturation_slider = self.create_slider("Saturation", 0, 255, self.saturation_color)
 
-        # 创建透明度滑动条
         self.alpha_label = QLabel("Alpha")
         self.alpha_slider = QSlider(Qt.Orientation.Horizontal)
         self.alpha_slider.setMinimum(0)
@@ -63,7 +56,6 @@ class ColorAdjuster(QWidget):
         self.alpha_slider.setValue(100)
         self.alpha_slider.valueChanged.connect(self.update_color_display)
 
-        # 创建透明度输入框
         self.alpha_edit = QLineEdit()
         self.alpha_edit.setValidator(QIntValidator(0, 100))
         self.alpha_edit.textChanged.connect(self.update_alpha_from_text)
@@ -78,7 +70,6 @@ class ColorAdjuster(QWidget):
         layout.addWidget(self.saturation_slider)
         layout.addLayout(alpha_layout)
 
-        # 创建颜色显示区域
         self.color_display = QLabel()
         self.color_display.setAutoFillBackground(True)
         self.update_color_display()
@@ -132,7 +123,6 @@ class ColorAdjuster(QWidget):
         palette.setColor(QPalette.ColorRole.Window, color)
         self.color_display.setPalette(palette)
 
-        # 同步显示透明度值到输入框
         self.alpha_edit.setText(str(self.alpha_slider.value()))
 
     def update_alpha_from_text(self):

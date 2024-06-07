@@ -24,13 +24,11 @@ class PreviewGraphicsView(QGraphicsView):
         self.image_items = []
 
     def set_gray_background(self):
-        # 创建灰色背景图片
         gray_image = QPixmap(self.size())
         gray_image.fill(QColor('lightgray'))
 
-        # 创建背景图像项并添加到场景
         self.background_item = QGraphicsPixmapItem(gray_image)
-        self.background_item.setZValue(-1)  # 将背景图像放置在所有图像项的下方
+        self.background_item.setZValue(-1) 
         self.scene.addItem(self.background_item)
     
     def clear_preview(self):
@@ -45,19 +43,14 @@ class PreviewGraphicsView(QGraphicsView):
         else:
             rgb_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB).astype(np.float32)
         
-        # Convert to HSV for color adjustments
         hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2HSV).astype(np.float32)
 
-        # Apply adjustments
-        hsv_image[..., 0] = hue % 180  # Hue adjustment
+        hsv_image[..., 0] = hue // 2  # Hue adjustment
         hsv_image[..., 1] = np.clip(hsv_image[..., 1] + saturation, 0, 255)  # Saturation adjustment
         hsv_image[..., 2] = np.clip(hsv_image[..., 2] + brightness, 0, 255)  # Brightness adjustment
 
-        
-        # Convert back to RGB
-        adjusted_rgb_image = cv2.cvtColor(hsv_image.astype(np.uint8), cv2.COLOR_HSV2RGB)
+        adjusted_rgb_image = cv2.cvtColor(hsv_image.astype(np.uint8), cv2.COLOR_HSV2BGR)
 
-        # If original image has alpha channel, merge it back
         if cv_image.shape[2] == 4:
             alpha_channel = np.clip(cv_image[:, :, 3] * (alpha / 255.0), 0, 255).astype(np.uint8)
             adjusted_image = cv2.merge((adjusted_rgb_image, alpha_channel))
