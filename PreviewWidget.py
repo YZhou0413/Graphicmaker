@@ -38,21 +38,6 @@ class PreviewGraphicsView(QGraphicsView):
             self.scene.removeItem(item)
         self.image_items.clear()
 
-    """def apply_color_adjustments(self, cv_image, hue, saturation, brightness, alpha):
-            hsv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV).astype(np.float32)
-            
-            # Apply adjustments
-            hsv_image[..., 0] = (hsv_image[..., 0] + hue) % 180
-            hsv_image[..., 1] = np.clip(hsv_image[..., 1] * (saturation / 255.0), 0, 255)
-            hsv_image[..., 2] = np.clip(hsv_image[..., 2] * (brightness / 255.0), 0, 255)
-            
-            bgr_image = cv2.cvtColor(hsv_image.astype(np.uint8), cv2.COLOR_HSV2BGR)
-
-            # Apply alpha
-            if cv_image.shape[2] == 4:  # If original image has alpha channel
-                bgr_image = cv2.addWeighted(bgr_image, alpha / 255.0, cv_image[..., :3], 1 - alpha / 255.0, 0)
-
-            return bgr_image"""
     def apply_color_adjustments(self, cv_image, hue, saturation, brightness, alpha):
         # Convert BGR to RGB for correct color adjustment
         if cv_image.shape[2] == 4:
@@ -62,11 +47,12 @@ class PreviewGraphicsView(QGraphicsView):
         
         # Convert to HSV for color adjustments
         hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2HSV).astype(np.float32)
-        
+
         # Apply adjustments
-        hsv_image[..., 0] = (hsv_image[..., 0] + hue) % 180  # Hue adjustment
-        hsv_image[..., 1] = np.clip(hsv_image[..., 1] * (saturation / 255.0), 0, 255)  # Saturation adjustment
-        hsv_image[..., 2] = np.clip(hsv_image[..., 2] * (brightness / 255.0), 0, 255)  # Brightness adjustment
+        hsv_image[..., 0] = hue % 180  # Hue adjustment
+        hsv_image[..., 1] = np.clip(hsv_image[..., 1] + saturation, 0, 255)  # Saturation adjustment
+        hsv_image[..., 2] = np.clip(hsv_image[..., 2] + brightness, 0, 255)  # Brightness adjustment
+
         
         # Convert back to RGB
         adjusted_rgb_image = cv2.cvtColor(hsv_image.astype(np.uint8), cv2.COLOR_HSV2RGB)

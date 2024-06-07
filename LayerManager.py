@@ -5,6 +5,7 @@ from PyQt6.QtGui import QCursor, QFont
 from collections import OrderedDict, deque
 from PreviewWidget import PreviewGraphicsView
 from Style import Style
+from collections import defaultdict
 
 class MyListWidget(QListWidget):
     itemMoved = pyqtSignal(int, int)
@@ -24,8 +25,16 @@ class MyListWidget(QListWidget):
         self.itemMoved.emit(self.from_index, to_index)
         event.accept()
 
+    def update_checkbox_state(self, text, state):
+        for i in range(self.count()):
+            item = self.item(i)
+            widget = self.itemWidget(item)
+            if widget.main_text_label.text() == text:
+                widget.set_checked(state)
+
+
 class CustomListWidgetItem(QWidget):
-    color_text = pyqtSignal(str)
+    checkbox_state_label = pyqtSignal(str, bool)
     def __init__(self, number, a, main_text, parent=None):
         super().__init__(parent)
         
@@ -33,6 +42,7 @@ class CustomListWidgetItem(QWidget):
         self.a_label = QLabel(f"{a}")
         self.main_text_label = QLabel(main_text)
         self.checkbox = QCheckBox()
+        self.checkbox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.checkbox.stateChanged.connect(self.update_color_layers)
 
         small_font = QFont()
@@ -68,8 +78,14 @@ class CustomListWidgetItem(QWidget):
         
         self.setLayout(layout)
 
+    def is_checked(self):
+        return self.checkbox.isChecked()
+
+    def set_checked(self, checked):
+        self.checkbox.setChecked(checked)
+
     def update_color_layers(self):
-        self.color_text.emit(self.main_text_label.text())
+        self.checkbox_state_label.emit(self.main_text_label.text(), self.checkbox.isChecked())
 
 class LayerManager(QWidget):
     clear_all_requested = pyqtSignal()
@@ -81,7 +97,7 @@ class LayerManager(QWidget):
         self.layers = OrderedDict()
         self.layers_order = [] # depend on what part is clicked first
         self.selected_layer_index = -1
-        self.current_colored_styles = []
+        self.current_colored_styles = defaultdict(lambda: None)
         self.init_ui()
 
     def init_ui(self):
@@ -259,33 +275,61 @@ class LayerManager(QWidget):
             self.clear_button.setEnabled(True)
 
     def refresh_layers(self):
+        checkbox_states = {}
+        for i in range(self.layer_list.count()):
+            item = self.layer_list.item(i)
+            widget_item = self.layer_list.itemWidget(item)
+            if widget_item:
+                layer_identifier = widget_item.main_text_label.text()  # 图层的唯一标识符
+                checkbox_states[layer_identifier] = widget_item.is_checked()
+
         self.layer_list.clear()
+
         if self.layers:
             for i, (layer_name, layer_data) in enumerate(reversed(list(self.layers.items()))):
                 item = QListWidgetItem(self.layer_list)
                 widget_item = CustomListWidgetItem(i + 1, layer_data.part_name, layer_data.style_name)
-                widget_item.color_text.connect(self.handle_color_change_list)
+                widget_item.checkbox_state_label.connect(self.handle_color_change_list)
                 item.setSizeHint(widget_item.sizeHint())
                 self.layer_list.setItemWidget(item, widget_item)
-                self.update_preview_dict.emit(self.layers)
-        else:
-            self.preview.clear_preview()
+
+            # 恢复复选框状态
+            for i in range(self.layer_list.count()):
+                item = self.layer_list.item(i)
+                widget_item = self.layer_list.itemWidget(item)
+                if widget_item:
+                    layer_identifier = widget_item.main_text_label.text()
+                    checkbox_state = widget_item.checkbox.isChecked()
+                    if layer_identifier in checkbox_states:
+                        state = checkbox_states[layer_identifier]
+                        widget_item.set_checked(state)
+                        self.layer_list.update_checkbox_state(widget_item, state)
+        self.update_preview_dict.emit(self.layers)
+        
     
-    def handle_color_change_list(self, layer_name_for_cAdj):
-        if layer_name_for_cAdj:
-            if layer_name_for_cAdj in self.current_colored_styles:
-                self.current_colored_styles.remove(layer_name_for_cAdj)
+    def handle_color_change_list(self, layer_name_for_cAdj, checkbox_state):
+        style_obj = self.layers[layer_name_for_cAdj]
+        part_name = style_obj.part_name
+        if checkbox_state == True:
+            if self.current_colored_styles[part_name]:
+                if style_obj != self.current_colored_styles[part_name]:
+                    self.current_colored_styles[part_name] = style_obj
             else:
-                self.current_colored_styles.append(layer_name_for_cAdj)
+                self.current_colored_styles[part_name] = style_obj
+
+        else:
+            if self.current_colored_styles[part_name]:
+                if style_obj == self.current_colored_styles[part_name]:
+                    del self.current_colored_styles[part_name]
 
 
     def update_color_adjustments(self, hue, saturation, brightness, alpha):
         if self.current_colored_styles:
-            for colored_style in self.current_colored_styles:
+            for part_name, color_style_obj in self.current_colored_styles.items():
                 for key, style_obj in self.layers.items():
-                    if key == colored_style:
+                    if key == color_style_obj.style_name:
                         style_obj.set_color_adjustments(hue, saturation, brightness, alpha)
-            self.refresh_layers()
+            self.update_preview_dict.emit(self.layers)
 
 
 

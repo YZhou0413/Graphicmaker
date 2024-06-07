@@ -15,15 +15,22 @@ class ColorSlider(QSlider):
         painter = QPainter(self)
         rect = self.rect()
 
-        # 绘制滑动条颜色渐变
+        # Fill the entire widget with a solid color to cover any gaps
+        painter.fillRect(rect, self.palette().window())
+
+        # Calculate the width of each rectangle
+        rect_width = rect.width() / (self.maximum() - self.minimum())
+
+        # Draw the gradient slider
         for i in range(self.minimum(), self.maximum() + 1):
             color = self.color_func(i)
             painter.setPen(QPen(color))
             painter.setBrush(QBrush(color))
-            x = int((i - self.minimum()) / (self.maximum() - self.minimum()) * rect.width())
-            painter.drawLine(x, 0, x, rect.height())
+            x = int((i - self.minimum()) * rect_width)
+            painter.drawRect(x, 0, int(rect_width), rect.height())
 
-        slider_position = int((self.value() - self.minimum()) / (self.maximum() - self.minimum()) * rect.width())
+        # Draw the handle of the slider
+        slider_position = int((self.value() - self.minimum()) * rect_width)
         handle_color = self.color_func(self.value())
         handle_radius = 7
 
@@ -32,6 +39,9 @@ class ColorSlider(QSlider):
         painter.drawEllipse(slider_position - handle_radius, rect.height() // 2 - handle_radius, 2 * handle_radius, 2 * handle_radius)
 
         painter.end()
+
+
+
 
 class ColorAdjuster(QWidget):
     hsba_changed = pyqtSignal(int, int, int, int)
@@ -42,7 +52,7 @@ class ColorAdjuster(QWidget):
         layout.setContentsMargins(2, 0, 2, 2)
         # 创建滑动条和标签
         self.hue_slider = self.create_slider("Hue", 0, 359, self.hue_color)
-        self.brightness_slider = self.create_slider("Lightness", 0, 255, self.lightness_color)
+        self.brightness_slider = self.create_slider("Lightness", 0, 100, self.lightness_color)
         self.saturation_slider = self.create_slider("Saturation", 0, 255, self.saturation_color)
 
         # 创建透明度滑动条
