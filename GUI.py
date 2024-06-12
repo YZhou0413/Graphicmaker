@@ -30,8 +30,8 @@ class Graphicmaker(QWidget):
 
     def init_ui(self):
         self.setLayout(self.main_layout)
-        self.main_layout.setSpacing(5)
-        self.main_layout.setContentsMargins(5, 10, 0, 0)  
+        self.main_layout.setSpacing(10)
+        self.main_layout.setContentsMargins(10, 10, 0, 0)  
 
         # 初始化模板下拉选择框
         self.setup_template_combo_box()

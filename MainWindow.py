@@ -6,6 +6,7 @@ from GUI import Graphicmaker
 from LayerManager import LayerManager
 from PreviewWidget import PreviewGraphicsView
 from ColorAdjust import ColorAdjuster
+from Exporter import exporter
 
 class Ui_MainWindow(QMainWindow):
     def __init__(self):
@@ -19,7 +20,6 @@ class Ui_MainWindow(QMainWindow):
             QLabel{font-size:12px;}
         """    
         ) 
-        self.placeholder2 = QLabel(self)
         self.placeholder3 = QLabel(self)
         self.placeholder4 = QLabel(self)
         self.placeholder5 = QLabel(self)
@@ -28,6 +28,7 @@ class Ui_MainWindow(QMainWindow):
         self.L_manager = LayerManager(preview=self.P_Widget)
         self.selectors = Graphicmaker(layer_manager=self.L_manager, folder_path='Assets', part_name='--'
                              ,styles='--')
+        self.exporter = exporter()
         self.setCentralWidget(self.selectors)
         self.selectors.style_layers_info.connect(self.L_manager.set_selected_styles)
         self.selectors.part_click.connect(self.L_manager.add_part_to_order)
@@ -35,8 +36,6 @@ class Ui_MainWindow(QMainWindow):
         self.L_manager.clear_all_requested.connect(self.selectors.clear_selected)
         self.L_manager.update_preview_dict.connect(self.P_Widget.update_preview)
         self.C_Adjuster.hsba_changed.connect(self.L_manager.update_color_adjustments)
-        
-
 
         self.r_dock = QDockWidget(self)
         self.r_dock.setStyleSheet("QDockWidget::title { border: 0px; }")
@@ -52,28 +51,17 @@ class Ui_MainWindow(QMainWindow):
         #set up dock widgets(frames)
         self.d_dock = QDockWidget(self)
         self.d_dock.setFixedWidth(600)
-        self.d_dock.setStyleSheet("QDockWidget::title { border: 0px; }")
+        self.d_dock.setTitleBarWidget(QWidget())
         self.d_dock.setAllowedAreas(Qt.DockWidgetArea.BottomDockWidgetArea)
-        self.d_dock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
         self.d_frame = QFrame(self)
         self.d_dock.setWidget(self.d_frame)
-        d_dock_layout = QHBoxLayout()
+        d_dock_layout = QGridLayout()
         self.d_frame.setLayout(d_dock_layout)
-        d_dock_layout.addWidget(self.C_Adjuster)
-        d_dock_layout.addWidget(self.placeholder2)
+        d_dock_layout.addWidget(self.C_Adjuster, 0, 0, 4, 4)
+        d_dock_layout.addWidget(self.exporter, 2, 4, 2, 4)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.d_dock)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.r_dock)
-        
-
-        self.test_button = QPushButton("Test Button", self)
-        self.test_button.setGeometry(10, 10, 100, 30)
-        self.test_button.clicked.connect(self.test_button_clicked)
         self.setup_Toolbar()
-
-    def test_button_clicked(self):
-        print("Test Button Clicked")
-
-        
 
     def setup_Toolbar(self):
         menu = self.menuBar()

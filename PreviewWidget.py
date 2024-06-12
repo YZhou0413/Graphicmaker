@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
-from PyQt6.QtGui import QColor, QPixmap, QImage
-from PyQt6.QtCore import Qt, QByteArray
+from PyQt6.QtGui import QColor, QPixmap, QImage, QPainter
+from PyQt6.QtCore import Qt, QByteArray, QRectF
 import os
 import cv2
 import numpy as np
@@ -47,7 +47,7 @@ class PreviewGraphicsView(QGraphicsView):
 
         hsv_image[..., 0] = hue // 2  # Hue adjustment
         hsv_image[..., 1] = np.clip(hsv_image[..., 1] + saturation, 0, 255)  # Saturation adjustment
-        hsv_image[..., 2] = np.clip(hsv_image[..., 2] + brightness, 0, 255)  # Brightness adjustment
+        hsv_image[..., 2] = np.clip(hsv_image[..., 2] + (brightness - 50), 0, 255)  # Brightness adjustment
 
         adjusted_rgb_image = cv2.cvtColor(hsv_image.astype(np.uint8), cv2.COLOR_HSV2BGR)
 
@@ -58,8 +58,6 @@ class PreviewGraphicsView(QGraphicsView):
             adjusted_image = adjusted_rgb_image
 
         return adjusted_image
-
-
 
     def update_preview(self, layers_dict):
         # Remove existing image items
@@ -84,6 +82,33 @@ class PreviewGraphicsView(QGraphicsView):
                 self.image_items.append(pixmap_item)
 
         self.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+    
+    def save_image_png_bg(self, filename, include_bg=False, rect=QRectF(0, 0, 192, 192)):
+        scene = self.scene()
+        image = QImage(rect.width(), rect.height(), QImage.Format.Format_ARGB32)
+        image.fill(0)
+        
+        painter = QPainter(image)
+        
+        all_items = scene.items()
+        if not include_bg:
+            for item in all_items:
+                if item.zValue() == -1:
+                    item.setVisible(False)
+
+        scene.render(painter, QRectF(image.rect()), rect)
+
+        painter.end()
+        
+        if not include_bg:
+            for item in all_items:
+                if item.zValue() == -1:
+                    item.setVisible(True)
+        
+        image.save(filename)
+
+
+        
 
 
 
