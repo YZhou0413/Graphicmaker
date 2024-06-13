@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
-from PyQt6.QtGui import QColor, QPixmap, QImage, QPainter
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QWidget, QVBoxLayout, QGridLayout, QPushButton, QApplication
+from PyQt6.QtGui import QColor, QPixmap, QImage, QPainter, QIcon
 from PyQt6.QtCore import Qt, QByteArray, QRectF
 import os
 import cv2
@@ -12,8 +12,10 @@ class PreviewGraphicsView(QGraphicsView):
         self.edit = False
         
     def init_ui(self):
-        self.setFixedSize(220, 220)
+        self.setFixedSize(192, 192)
         self.setWindowTitle('Preview')
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # 创建场景
         self.scene = QGraphicsScene(self)
@@ -37,7 +39,6 @@ class PreviewGraphicsView(QGraphicsView):
         self.image_items.clear()
 
     def apply_color_adjustments(self, cv_image, hue, saturation, brightness, alpha):
-        # Convert BGR to RGB for correct color adjustment
         if cv_image.shape[2] == 4:
             rgb_image = cv2.cvtColor(cv_image[:, :, :3], cv2.COLOR_BGRA2RGB).astype(np.float32)
         else:
@@ -45,9 +46,9 @@ class PreviewGraphicsView(QGraphicsView):
         
         hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2HSV).astype(np.float32)
 
-        hsv_image[..., 0] = hue // 2  # Hue adjustment
-        hsv_image[..., 1] = np.clip(hsv_image[..., 1] + saturation, 0, 255)  # Saturation adjustment
-        hsv_image[..., 2] = np.clip(hsv_image[..., 2] + (brightness - 50), 0, 255)  # Brightness adjustment
+        hsv_image[..., 0] = hue // 2
+        hsv_image[..., 1] = np.clip(hsv_image[..., 1] + saturation, 0, 255) 
+        hsv_image[..., 2] = np.clip(hsv_image[..., 2] + (brightness - 100), 0, 255) 
 
         adjusted_rgb_image = cv2.cvtColor(hsv_image.astype(np.uint8), cv2.COLOR_HSV2BGR)
 
@@ -60,7 +61,6 @@ class PreviewGraphicsView(QGraphicsView):
         return adjusted_image
 
     def update_preview(self, layers_dict):
-        # Remove existing image items
         for item in self.image_items:
             self.scene.removeItem(item)
         self.image_items.clear()
@@ -72,7 +72,6 @@ class PreviewGraphicsView(QGraphicsView):
                 if item_style_obj.hue is not None:
                     cv_image = self.apply_color_adjustments(cv_image, item_style_obj.hue, item_style_obj.saturation, item_style_obj.brightness, item_style_obj.alpha)
 
-                # Convert the OpenCV image to QPixmap
                 _, buffer = cv2.imencode('.png', cv_image)
                 image_data = buffer.tobytes()
                 pixmap = QPixmap()
@@ -106,6 +105,43 @@ class PreviewGraphicsView(QGraphicsView):
                     item.setVisible(True)
         
         image.save(filename)
+
+class PreviewWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.pre_view = PreviewGraphicsView()
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+        button_layout = QGridLayout()
+        b_90_left = QPushButton()
+        b_90_left.setToolTip("90° left")
+        b_90_right = QPushButton()
+        b_90_right.setToolTip("90° right")
+        b_flip = QPushButton()
+        b_flip.setToolTip("horiziontal flip")
+        left_icon = QIcon("Icons\\arrow-90deg-left.svg")
+        right_icon = QIcon("Icons\\arrow-90deg-right.svg")
+        flip_icon = QIcon("Icons\\symmetry-vertical.svg")
+        b_90_left.setIcon(left_icon)
+        b_90_right.setIcon(right_icon)
+        b_flip.setIcon(flip_icon)
+        button_layout.addWidget(b_90_left, 0, 0)
+        button_layout.addWidget(b_90_right, 0, 1)
+        button_layout.addWidget(b_flip, 0, 2)
+
+        layout.addWidget(self.pre_view)
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+if __name__ == "__main__":
+    import sys
+    app = QApplication(sys.argv)
+    MainWindow = PreviewWidget()
+    MainWindow.show()
+    sys.exit(app.exec())
+    
 
 
         

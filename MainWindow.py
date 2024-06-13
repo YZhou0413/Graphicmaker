@@ -4,7 +4,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 from GUI import Graphicmaker
 from LayerManager import LayerManager
-from PreviewWidget import PreviewGraphicsView
+from PreviewWidget import PreviewWidget
 from ColorAdjust import ColorAdjuster
 from Exporter import exporter
 
@@ -13,18 +13,12 @@ class Ui_MainWindow(QMainWindow):
         super().__init__()
         self.setObjectName("Graphic Maker")
         self.setFixedSize(1000, 700)
-        #placeholder Widget
-        self.LM_titel = QLabel(self)
-        self.LM_titel.setStyleSheet("""
-            QLabel{background: #f3f6f4;}
-            QLabel{font-size:12px;}
-        """    
-        ) 
+
         self.placeholder3 = QLabel(self)
         self.placeholder4 = QLabel(self)
         self.placeholder5 = QLabel(self)
         self.C_Adjuster = ColorAdjuster()
-        self.P_Widget = PreviewGraphicsView()
+        self.P_Widget = PreviewWidget()
         self.L_manager = LayerManager(preview=self.P_Widget)
         self.selectors = Graphicmaker(layer_manager=self.L_manager, folder_path='Assets', part_name='--'
                              ,styles='--')
@@ -34,19 +28,21 @@ class Ui_MainWindow(QMainWindow):
         self.selectors.part_click.connect(self.L_manager.add_part_to_order)
         self.selectors.change_template.connect(self.L_manager.clear_layers_template_change)
         self.L_manager.clear_all_requested.connect(self.selectors.clear_selected)
-        self.L_manager.update_preview_dict.connect(self.P_Widget.update_preview)
+        self.L_manager.update_preview_dict.connect(self.P_Widget.pre_view.update_preview)
         self.C_Adjuster.hsba_changed.connect(self.L_manager.update_color_adjustments)
+
 
         self.r_dock = QDockWidget(self)
         self.r_dock.setStyleSheet("QDockWidget::title { border: 0px; }")
         self.r_dock.setAllowedAreas(Qt.DockWidgetArea.RightDockWidgetArea)
         self.r_dock.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
         self.r_frame = QFrame(self)
+        self.r_frame.setFixedWidth(240)
         self.r_dock.setWidget(self.r_frame)
-        r_dock_layout = QVBoxLayout()
+        r_dock_layout = QGridLayout()
         self.r_frame.setLayout(r_dock_layout)
-        r_dock_layout.addWidget(self.P_Widget)
-        r_dock_layout.addWidget(self.L_manager)
+        r_dock_layout.addWidget(self.P_Widget, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+        r_dock_layout.addWidget(self.L_manager, 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
         #set up dock widgets(frames)
         self.d_dock = QDockWidget(self)
@@ -58,7 +54,7 @@ class Ui_MainWindow(QMainWindow):
         d_dock_layout = QGridLayout()
         self.d_frame.setLayout(d_dock_layout)
         d_dock_layout.addWidget(self.C_Adjuster, 0, 0, 4, 4)
-        d_dock_layout.addWidget(self.exporter, 2, 4, 2, 4)
+        d_dock_layout.addWidget(self.exporter, 2, 3, 2, 4)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.d_dock)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.r_dock)
         self.setup_Toolbar()

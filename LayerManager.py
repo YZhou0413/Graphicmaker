@@ -37,10 +37,22 @@ class CustomListWidgetItem(QWidget):
     checkbox_state_label = pyqtSignal(str, bool)
     def __init__(self, number, a, main_text, parent=None):
         super().__init__(parent)
-        
         self.number_label = QLabel(str(number))
         self.a_label = QLabel(f"{a}")
         self.main_text_label = QLabel(main_text)
+        self.main_text_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.main_text_label.setWordWrap(False)
+        self.main_text_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        
+        # 使用样式表设置省略号
+        self.main_text_label.setStyleSheet("""
+            QLabel {
+                qproperty-alignment: 'AlignVCenter | AlignLeft';
+                max-width: 120px;
+                white-space: nowrap;
+            }
+        """)
+
         self.checkbox = QCheckBox()
         self.checkbox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.checkbox.stateChanged.connect(self.update_color_layers)
@@ -63,12 +75,11 @@ class CustomListWidgetItem(QWidget):
         self.a_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         self.main_text_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         
-        # 创建垂直布局，中间的标签
+
         middle_layout = QVBoxLayout()
         middle_layout.addWidget(self.a_label)
         middle_layout.addWidget(self.main_text_label)
         
-        # 创建水平布局，左侧的数字，中间的标签和右侧的复选框
         layout = QHBoxLayout()
         layout.addWidget(self.number_label)
         layout.addWidget(self.separator)
@@ -101,7 +112,7 @@ class LayerManager(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        Titel_label = QLabel("Layer Manager")
+        self.LM_label = QLabel("Layer Manager")
         self.layer_list = MyListWidget()
         self.layer_list.setStyleSheet("""
             QListWidget::item {
@@ -134,8 +145,8 @@ class LayerManager(QWidget):
         button_layout.addWidget(self.lower_button, 0, 0)
         button_layout.addWidget(self.raise_button, 0, 1)
         button_layout.addWidget(self.clear_button, 1, 0, 1, 2)
-        self.setFixedSize(220, 400)
-        layout.addWidget(Titel_label)
+        self.setFixedSize(210, 400)
+        layout.addWidget(self.LM_label)
         layout.addWidget(self.layer_list)
         layout.addLayout(button_layout)
 
