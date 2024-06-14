@@ -71,7 +71,7 @@ class Graphicmaker(QWidget):
         part_selector_layout = QGridLayout()
         for i, default_selector in enumerate(self.style_selectors):
             layout = part_selector_layout
-            row, col = divmod(i, 4)
+            row, col = divmod(i, 3)
             layout.addWidget(default_selector, row, col)
         self.main_layout.addLayout(part_selector_layout, 1, 0, 4, 3)
 

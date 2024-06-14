@@ -17,11 +17,9 @@ class PreviewGraphicsView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        # 创建场景
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
 
-        # 创建灰色背景
         self.set_gray_background()
         self.image_items = []
 
@@ -32,6 +30,19 @@ class PreviewGraphicsView(QGraphicsView):
         self.background_item = QGraphicsPixmapItem(gray_image)
         self.background_item.setZValue(-1) 
         self.scene.addItem(self.background_item)
+
+    def change_bg_color(self, hue, sat, bri, alpha):
+        if self.background_item: 
+            self.scene.removeItem(self.background_item)
+        color = QColor.fromHsl(hue, sat, bri)
+        color.setAlpha(alpha)
+        bg_color_i = QPixmap(self.size())
+        bg_color_i.fill(color)
+
+        self.background_item = QGraphicsPixmapItem(bg_color_i)
+        self.background_item.setZValue(-1) 
+        self.scene.addItem(self.background_item)
+
     
     def clear_preview(self):
         for item in self.image_items:
@@ -48,7 +59,7 @@ class PreviewGraphicsView(QGraphicsView):
 
         hsv_image[..., 0] = hue // 2
         hsv_image[..., 1] = np.clip(hsv_image[..., 1] + saturation, 0, 255) 
-        hsv_image[..., 2] = np.clip(hsv_image[..., 2] + (brightness - 100), 0, 255) 
+        hsv_image[..., 2] = np.clip(hsv_image[..., 2] + (brightness - 125), 0, 255) 
 
         adjusted_rgb_image = cv2.cvtColor(hsv_image.astype(np.uint8), cv2.COLOR_HSV2BGR)
 
