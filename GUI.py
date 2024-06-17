@@ -16,11 +16,12 @@ class Graphicmaker(QWidget):
     part_click = pyqtSignal(str)
     change_template = pyqtSignal(str)
     
-    def __init__(self, layer_manager, folder_path='Assets',part_name = '--', styles = '--'):
+    def __init__(self, layer_manager, folder_path, part_name = '--', styles = '--'):
         super().__init__()
         self.setWindowTitle('Graphic Maker')
         self.setGeometry(100, 100, 600, 400)
         self.file_manager = FileManager(folder_path)
+        self.folder_path = folder_path
         self.part_name = part_name
         self.styles = styles
         self.style_selectors = [] 
@@ -28,14 +29,16 @@ class Graphicmaker(QWidget):
         self.layer_manager = layer_manager
         self.init_ui()
 
+    def load_new_folder(self, source_path):
+        self.file_manager.update_folder_path(source_path)
+        self.load_templates()
+
     def init_ui(self):
         self.setLayout(self.main_layout)
         self.main_layout.setSpacing(10)
         self.main_layout.setContentsMargins(10, 10, 0, 0)  
 
-        # 初始化模板下拉选择框
         self.setup_template_combo_box()
-        # 加载模板列表
         self.load_templates()
 
     def setup_template_combo_box(self):
@@ -48,10 +51,9 @@ class Graphicmaker(QWidget):
         template_layout.addWidget(self.template_label)
         template_layout.addWidget(self.template_combo_box)
         self.main_layout.addLayout(template_layout, 0, 0, 1, 3)
-
-        
-
+     
     def load_templates(self):
+        self.template_combo_box.clear()
         template_names = self.file_manager.get_template_names()
         self.template_combo_box.addItems(template_names)
 
@@ -94,11 +96,9 @@ class Graphicmaker(QWidget):
                 break
 
     def clear_selected(self):
-        print("clear requested")
         for style_selector in self.style_selectors:
             style_selector.clear_item_select()
         self.style_layers_info.emit({})
-        print("sent empty dict")
         
 
     def react_style_selected(self, part_name, selected_style):
@@ -113,7 +113,6 @@ class Graphicmaker(QWidget):
             print(f'Error: Style path not found for {selected_style}')
 
     def send_layers_with_selected_style(self):
-        # 获取已经选择的所有部件的图片路径
         selected_styles = [selector.current_style() for selector in self.style_selectors if selector.current_style()]
         template_name = self.template_combo_box.currentText()
         name_for_layers = self.collect_image_paths(template_name, selected_styles)

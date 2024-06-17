@@ -7,6 +7,9 @@ class FileManager(QObject):
         super().__init__()
         self.folder_path = folder_path
 
+    def update_folder_path(self, new_path):
+        self.folder_path = new_path
+
     def get_template_names(self):
         template_names = []
         if os.path.exists(self.folder_path) and os.path.isdir(self.folder_path):

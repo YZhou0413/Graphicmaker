@@ -1,7 +1,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QGridLayout, QToolBar, QDockWidget, QFrame, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton
+from PyQt6.QtWidgets import QMainWindow, QGridLayout, QToolBar, QDockWidget, QFrame, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton, QFileDialog
 from PyQt6.QtGui import QAction
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from GUI import Graphicmaker
 from LayerManager import LayerManager
 from PreviewWidget import PreviewWidget
@@ -9,6 +9,7 @@ from ColorAdjust import ColorAdjuster
 from Exporter import exporter
 
 class Ui_MainWindow(QMainWindow):
+    new_folder = pyqtSignal(str)
     def __init__(self):
         super().__init__()
         self.setObjectName("Graphic Maker")
@@ -24,6 +25,7 @@ class Ui_MainWindow(QMainWindow):
                              ,styles='--')
         self.exporter = exporter()
         self.setCentralWidget(self.selectors)
+        self.new_folder.connect(self.selectors.load_new_folder)
         self.selectors.style_layers_info.connect(self.L_manager.set_selected_styles)
         self.selectors.part_click.connect(self.L_manager.add_part_to_order)
         self.selectors.change_template.connect(self.L_manager.clear_layers_template_change)
@@ -32,6 +34,7 @@ class Ui_MainWindow(QMainWindow):
         self.C_Adjuster.hsba_changed.connect(self.L_manager.update_color_adjustments)
         self.exporter.bg_color_bool.connect(self.C_Adjuster.mani_signal_connection)
         self.C_Adjuster.bg_color.connect(self.P_Widget.pre_view.change_bg_color)
+        self.exporter.save_bg_bool.connect(self.P_Widget.pre_view.save_image_png_bg)
 
 
         self.r_dock = QDockWidget(self)
@@ -55,12 +58,21 @@ class Ui_MainWindow(QMainWindow):
         menu = self.menuBar()
         File = menu.addMenu('File')
         File.addAction('New')
+        source = File.addAction('Source path')
+        source.triggered.connect(self.set_source_path)
         SaveA = File.addMenu('Save as')
-        SaveA.addAction('*.PNG')
-        SaveA.addAction('*.JPG')
+        SaveA.addAction('*.PNG with background')
+        SaveA.addAction('*.PNG without background')
+        HelpAct = QAction("Help", self)
         QuitAct = QAction("Quit", self)
         QuitAct.triggered.connect(self.close)
+        menu.addAction(HelpAct)
         menu.addAction(QuitAct)
+
+    def set_source_path(self):
+        new_folder_path = QFileDialog.getExistingDirectory(self, "Select Directory")
+        self.new_folder.emit(new_folder_path)
+        
     
 if __name__ == "__main__":
     import sys

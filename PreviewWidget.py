@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QWidget, QVBoxLayout, QGridLayout, QPushButton, QApplication
-from PyQt6.QtGui import QColor, QPixmap, QImage, QPainter, QIcon
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QWidget, QVBoxLayout, QGridLayout, QPushButton, QApplication, QFileDialog
+from PyQt6.QtGui import QColor, QPixmap, QImage, QPainter, QIcon, QTransform
 from PyQt6.QtCore import Qt, QByteArray, QRectF
 import os
 import cv2
@@ -10,15 +10,16 @@ class PreviewGraphicsView(QGraphicsView):
         super().__init__()
         self.init_ui()
         self.edit = False
-        
+        self.flipped = False
+
     def init_ui(self):
         self.setFixedSize(192, 192)
         self.setWindowTitle('Preview')
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        self.scene = QGraphicsScene(self)
-        self.setScene(self.scene)
+        self.scene_ = QGraphicsScene(self)
+        self.setScene(self.scene_)
 
         self.set_gray_background()
         self.image_items = []
@@ -29,11 +30,11 @@ class PreviewGraphicsView(QGraphicsView):
 
         self.background_item = QGraphicsPixmapItem(gray_image)
         self.background_item.setZValue(-1) 
-        self.scene.addItem(self.background_item)
+        self.scene_.addItem(self.background_item)
 
     def change_bg_color(self, hue, sat, bri, alpha):
         if self.background_item: 
-            self.scene.removeItem(self.background_item)
+            self.scene_.removeItem(self.background_item)
         color = QColor.fromHsl(hue, sat, bri)
         color.setAlpha(alpha)
         bg_color_i = QPixmap(self.size())
@@ -41,12 +42,12 @@ class PreviewGraphicsView(QGraphicsView):
 
         self.background_item = QGraphicsPixmapItem(bg_color_i)
         self.background_item.setZValue(-1) 
-        self.scene.addItem(self.background_item)
+        self.scene_.addItem(self.background_item)
 
     
     def clear_preview(self):
         for item in self.image_items:
-            self.scene.removeItem(item)
+            self.scene_.removeItem(item)
         self.image_items.clear()
 
     def apply_color_adjustments(self, cv_image, hue, saturation, brightness, alpha):
@@ -73,7 +74,7 @@ class PreviewGraphicsView(QGraphicsView):
 
     def update_preview(self, layers_dict):
         for item in self.image_items:
-            self.scene.removeItem(item)
+            self.scene_.removeItem(item)
         self.image_items.clear()
 
         for (layer_name, item_style_obj) in layers_dict.items():
@@ -88,34 +89,44 @@ class PreviewGraphicsView(QGraphicsView):
                 pixmap = QPixmap()
                 pixmap.loadFromData(image_data)
                 pixmap_item = QGraphicsPixmapItem(pixmap)
-                self.scene.addItem(pixmap_item)
+                self.scene_.addItem(pixmap_item)
                 self.image_items.append(pixmap_item)
 
-        self.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+        self.fitInView(self.scene_.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
     
-    def save_image_png_bg(self, filename, include_bg=False, rect=QRectF(0, 0, 192, 192)):
-        scene = self.scene()
-        image = QImage(rect.width(), rect.height(), QImage.Format.Format_ARGB32)
-        image.fill(0)
-        
-        painter = QPainter(image)
-        
-        all_items = scene.items()
-        if not include_bg:
-            for item in all_items:
-                if item.zValue() == -1:
-                    item.setVisible(False)
+    def flip_view(self):
+        self.flipped = not self.flipped
+        transform = QTransform().scale(-1, 1) if self.flipped else QTransform()
+        self.setTransform(transform)
 
-        scene.render(painter, QRectF(image.rect()), rect)
+    
+    def save_image_png_bg(self, include_bg, rect=QRectF(0, 0, 192, 192)):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "PNG Files (*.png);;All Files (*)")
+        if file_path:
+            image = QImage(rect.width(), rect.height(), QImage.Format.Format_ARGB32)
+            image.fill(0)
+            painter = QPainter(image)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            all_items = self.scene_.items()
+            if not include_bg:
+                for item in all_items:
+                    if item.zValue() == -1:
+                        item.setVisible(False)
 
-        painter.end()
-        
-        if not include_bg:
-            for item in all_items:
-                if item.zValue() == -1:
-                    item.setVisible(True)
-        
-        image.save(filename)
+            self.scene_.render(painter, QRectF(image.rect()), rect)
+            painter.end()
+            if self.flipped == False:
+                image.save(file_path)
+            else:
+                flipped_image = image.mirrored(True, False)
+                flipped_image.save(file_path)    
+
+
+            if not include_bg:
+                for item in all_items:
+                    if item.zValue() == -1:
+                        item.setVisible(True)       
+            
 
 class PreviewWidget(QWidget):
     def __init__(self):
@@ -125,25 +136,13 @@ class PreviewWidget(QWidget):
 
     def init_ui(self):
         layout = QVBoxLayout()
-        button_layout = QGridLayout()
-        b_90_left = QPushButton()
-        b_90_left.setToolTip("90° left")
-        b_90_right = QPushButton()
-        b_90_right.setToolTip("90° right")
-        b_flip = QPushButton()
-        b_flip.setToolTip("horiziontal flip")
-        left_icon = QIcon("Icons\\arrow-90deg-left.svg")
-        right_icon = QIcon("Icons\\arrow-90deg-right.svg")
+        b_flip = QPushButton("horizontal flip")
+        b_flip.clicked.connect(self.pre_view.flip_view)
         flip_icon = QIcon("Icons\\symmetry-vertical.svg")
-        b_90_left.setIcon(left_icon)
-        b_90_right.setIcon(right_icon)
         b_flip.setIcon(flip_icon)
-        button_layout.addWidget(b_90_left, 0, 0)
-        button_layout.addWidget(b_90_right, 0, 1)
-        button_layout.addWidget(b_flip, 0, 2)
 
         layout.addWidget(self.pre_view)
-        layout.addLayout(button_layout)
+        layout.addWidget(b_flip)
         self.setLayout(layout)
 
 if __name__ == "__main__":

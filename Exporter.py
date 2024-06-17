@@ -3,13 +3,16 @@ from PyQt6.QtCore import Qt, pyqtSignal
 
 class exporter(QWidget):
     bg_color_bool = pyqtSignal(bool)
+    save_bg_bool = pyqtSignal(bool)
     def __init__(self):
         super().__init__()
         self.setFixedSize(200, 200)
         layout = QVBoxLayout()
         self.frame = QFrame()
         self.button1 = QPushButton("with Background", self)
+        self.button1.clicked.connect(self.save_bg_signal_true)
         self.button2 = QPushButton("no Background", self)
+        self.button2.clicked.connect(self.save_bg_signal_false)
         self.b_bg_color = QPushButton("change color", self)
         self.b_bg_color.setCheckable(True)
         self.b_bg_color.clicked.connect(self.bg_color_signal)
@@ -37,3 +40,8 @@ class exporter(QWidget):
         else:
             self.bg_color_bool.emit(False)
         
+    def save_bg_signal_true(self):
+        self.save_bg_bool.emit(True)
+
+    def save_bg_signal_false(self):
+        self.save_bg_bool.emit(False)
