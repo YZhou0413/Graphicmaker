@@ -1,13 +1,16 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGridLayout, QListWidget, QListWidgetItem
 from PyQt6.QtCore import pyqtSignal, Qt
+import random
+from collections import defaultdict
 
 class PartSelector(QWidget):
-    style_chosen = pyqtSignal(str, str)  # 自定义信号，传递部件类型和所选样式
+    style_chosen = pyqtSignal(str, str) 
+    chosen_styles_to_layer = pyqtSignal(defaultdict)
 
     def __init__(self, part_name, _styles, parent=None):
         super().__init__(parent)
         self.part_name = part_name
-        self.styles = {}
+        self.styles = []
         self.block_layout = QVBoxLayout()
         self.setup_ui()
         self.last_clicked_item = None
@@ -30,7 +33,7 @@ class PartSelector(QWidget):
     def react_item_click(self, item):
         if isinstance(item, QListWidgetItem):
             if item != self.last_clicked_item:
-                selected_style = item.data(0)
+                selected_style = item.text()
                 self.style_chosen.emit(self.part_name, selected_style)
                 self.last_clicked_item = item
             else:
@@ -38,33 +41,49 @@ class PartSelector(QWidget):
         else:
             print("Invalid item type:", type(item))
     
+    def set_item_data(self, item, object_list):
+        if list(object_list.keys())[0] == self.part_name:
+            if isinstance(item, QListWidgetItem):
+                if item == list(object_list.values())[0].style_name:
+                    item.setData(Qt.ItemDataRole.UserRole, list(object_list.values()))
+
+            
     def clear_item_select(self):
         if self.list_widget.selectedItems():
             self.list_widget.clearSelection()
             self.list_widget.setCurrentItem(None)
 
     def set_text(self, text):
-        
         self.label.setText(text)
         self.part_name = text
 
-    def set_styles(self, styles, paths):
+    def set_styles(self, styles):
         self.list_widget.clear()
         self.styles = styles
         for style in self.styles:
-            if isinstance(style, dict):
-                name = style[name]
-                path = paths[name] if paths else "None"
-            else:
-                name = style
-                path = style
-            item = QListWidgetItem(name)  # 使用样式名称作为列表项的文本
-            if path:
-                item.setData(Qt.ItemDataRole.UserRole, path)  # 将对应的路径存储在列表项的数据中
+            item = QListWidgetItem(style)
             self.list_widget.addItem(item)
             
     def current_style(self):
-        return self.list_widget.currentItem().text() if self.list_widget.currentItem() else None
+        current_item = self.list_widget.currentItem()
+        if current_item and current_item.text() is not None:
+            return current_item.text()
+        else:
+            return
+    
+    def random_select(self):
+        if self.list_widget.count() > 0:
+            if self.list_widget.selectedItems():
+                self.list_widget.clearSelection()
+            random_item = self.list_widget.item(random.randint(1, self.list_widget.count() - 1))
+            random_data = random_item.data(0)
+            self.list_widget.setCurrentItem(random_item)
+            self.list_widget.setFocus()
+            if random_item != self.last_clicked_item:
+                self.style_chosen.emit(self.part_name, random_data)
+                self.last_clicked_item = random_item
+            else:
+                pass
     
 
 

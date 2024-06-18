@@ -10,14 +10,12 @@ from Exporter import exporter
 
 class Ui_MainWindow(QMainWindow):
     new_folder = pyqtSignal(str)
+    random = pyqtSignal()
     def __init__(self):
         super().__init__()
         self.setObjectName("Graphic Maker")
         self.setFixedSize(1000, 700)
 
-        self.placeholder3 = QLabel(self)
-        self.placeholder4 = QLabel(self)
-        self.placeholder5 = QLabel(self)
         self.C_Adjuster = ColorAdjuster()
         self.P_Widget = PreviewWidget()
         self.L_manager = LayerManager(preview=self.P_Widget)
@@ -25,6 +23,8 @@ class Ui_MainWindow(QMainWindow):
                              ,styles='--')
         self.exporter = exporter()
         self.setCentralWidget(self.selectors)
+        
+        self.random.connect(self.selectors.random_selection)
         self.new_folder.connect(self.selectors.load_new_folder)
         self.selectors.style_layers_info.connect(self.L_manager.set_selected_styles)
         self.selectors.part_click.connect(self.L_manager.add_part_to_order)
@@ -35,6 +35,7 @@ class Ui_MainWindow(QMainWindow):
         self.exporter.bg_color_bool.connect(self.C_Adjuster.mani_signal_connection)
         self.C_Adjuster.bg_color.connect(self.P_Widget.pre_view.change_bg_color)
         self.exporter.save_bg_bool.connect(self.P_Widget.pre_view.save_image_png_bg)
+        self.exporter.bg_pic.connect(self.P_Widget.pre_view.bg_pic)
 
 
         self.r_dock = QDockWidget(self)
@@ -58,14 +59,19 @@ class Ui_MainWindow(QMainWindow):
         menu = self.menuBar()
         File = menu.addMenu('File')
         File.addAction('New')
-        source = File.addAction('Source path')
+        source = File.addAction('load folder')
         source.triggered.connect(self.set_source_path)
         SaveA = File.addMenu('Save as')
-        SaveA.addAction('*.PNG with background')
-        SaveA.addAction('*.PNG without background')
+        with_bg = SaveA.addAction('*.PNG with background')
+        with_bg.triggered.connect(self.exporter.save_bg_signal_true)
+        no_bg = SaveA.addAction('*.PNG without background')
+        no_bg.triggered.connect(self.exporter.save_bg_signal_false)
         HelpAct = QAction("Help", self)
         QuitAct = QAction("Quit", self)
+        RandomAct = QAction("Randomizer", self)
+        RandomAct.triggered.connect(self.throw_random)
         QuitAct.triggered.connect(self.close)
+        menu.addAction(RandomAct)
         menu.addAction(HelpAct)
         menu.addAction(QuitAct)
 
@@ -73,6 +79,8 @@ class Ui_MainWindow(QMainWindow):
         new_folder_path = QFileDialog.getExistingDirectory(self, "Select Directory")
         self.new_folder.emit(new_folder_path)
         
+    def throw_random(self):
+        self.random.emit()
     
 if __name__ == "__main__":
     import sys

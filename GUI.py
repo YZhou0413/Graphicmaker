@@ -12,9 +12,10 @@ from LayerManager import LayerManager
 from collections import defaultdict
 
 class Graphicmaker(QWidget):
-    style_layers_info = pyqtSignal(dict)
+    style_layers_info = pyqtSignal(defaultdict)
     part_click = pyqtSignal(str)
     change_template = pyqtSignal(str)
+    set_style_data_sig = pyqtSignal(str, defaultdict)
     
     def __init__(self, layer_manager, folder_path, part_name = '--', styles = '--'):
         super().__init__()
@@ -88,9 +89,8 @@ class Graphicmaker(QWidget):
         for i, part_name in enumerate(parts):
             if i < len(self.style_selectors):
                 styles = self.file_manager.remove_dosign(template_name, part_name)
-                paths = self.file_manager.get_paths_for_style(template_name, part_name)
                 self.style_selectors[i].set_text(part_name)
-                self.style_selectors[i].set_styles(styles, paths)
+                self.style_selectors[i].set_styles(styles)
                 self.style_selectors[i].style_chosen.connect(self.react_style_selected)
             else:
                 break
@@ -100,47 +100,21 @@ class Graphicmaker(QWidget):
             style_selector.clear_item_select()
         self.style_layers_info.emit({})
         
+    def random_selection(self):
+        self.clear_selected()
+        for style_selector in self.style_selectors:
+            style_selector.random_select()
+
 
     def react_style_selected(self, part_name, selected_style):
         print(f'Selected part: {part_name}, Style: {selected_style}')
         template_name = self.template_combo_box.currentText()
-        paths = self.file_manager.get_paths_for_style(template_name, part_name)
+        object_needed = self.file_manager.create_object_for_style(template_name, part_name, selected_style)
+        self.style_layers_info.emit(object_needed)
         self.part_click.emit(part_name)
-        if selected_style in paths:
-            image_path = paths[selected_style]
-            self.send_layers_with_selected_style()
-        else:
-            print(f'Error: Style path not found for {selected_style}')
-
-    def send_layers_with_selected_style(self):
-        selected_styles = [selector.current_style() for selector in self.style_selectors if selector.current_style()]
-        template_name = self.template_combo_box.currentText()
-        name_for_layers = self.collect_image_paths(template_name, selected_styles)
-        self.style_layers_info.emit(name_for_layers)
-
-    def collect_image_paths(self, template_name, selected_styles):
-        name_for_layers = defaultdict(list)
-        for style_name in selected_styles:
-            parts = self.file_manager.get_part_names_for_template(template_name)
-            all_paths = {}
-            for part in parts:
-                part_paths = self.file_manager.get_paths_for_style(template_name, part)
-                all_paths = {**all_paths, **part_paths}
-            
-            if style_name in all_paths:
-                image_paths = all_paths[style_name]
-                for each_path in image_paths:
-                    path_string = os.fsdecode(each_path)
-                    layer_info = path_string.split("\\")
-                    style_layer = layer_info[-1]
-                    if layer_info[0] == 'None':
-                        part_layer = 'None'
-                    else:
-                        part_layer = layer_info[-2]
-                    name_for_layers[part_layer].append({style_layer: path_string})
-            else:
-                print(f'Error: Part path not found for {style_name}')
-        return name_for_layers
+        for selector in self.style_selectors:
+            if part_name == selector.part_name:
+                selector.set_item_data(selected_style, object_needed)
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -4,9 +4,10 @@ from PyQt6.QtCore import Qt, pyqtSignal
 class exporter(QWidget):
     bg_color_bool = pyqtSignal(bool)
     save_bg_bool = pyqtSignal(bool)
+    bg_pic = pyqtSignal()
     def __init__(self):
         super().__init__()
-        self.setFixedSize(200, 200)
+        self.setFixedSize(200, 220)
         layout = QVBoxLayout()
         self.frame = QFrame()
         self.button1 = QPushButton("with Background", self)
@@ -17,7 +18,12 @@ class exporter(QWidget):
         self.b_bg_color.setCheckable(True)
         self.b_bg_color.clicked.connect(self.bg_color_signal)
         self.b_bg_pic = QPushButton("set a image", self)
-        self.b_bg_pic.setCheckable(True)
+        self.b_bg_pic.clicked.connect(self.b_pic_si)
+        self.placeholder = QFrame(self)
+        self.placeholder.setFixedHeight(5)
+        self.placeholder.setFrameShape(QFrame.Shape.HLine)
+        self.placeholder.setFrameShadow(QFrame.Shadow.Sunken)
+
     
 
         self.label0 = QLabel("edit background", self)
@@ -28,9 +34,10 @@ class exporter(QWidget):
         main_layout.addWidget(self.label0, 0, 0, 1, 2)
         main_layout.addWidget(self.b_bg_color, 1, 0, 1, 2)
         main_layout.addWidget(self.b_bg_pic, 2, 0, 1, 2)
-        main_layout.addWidget(self.label1, 3, 0, 1, 2)
-        main_layout.addWidget(self.button1, 4, 0, 1, 2)
-        main_layout.addWidget(self.button2, 5, 0, 1, 2)
+        main_layout.addWidget(self.placeholder, 3, 0, 1, 2)
+        main_layout.addWidget(self.label1, 4, 0, 1, 2)
+        main_layout.addWidget(self.button1, 5, 0, 1, 2)
+        main_layout.addWidget(self.button2, 6, 0, 1, 2)
         layout.addWidget(self.frame)
         self.setLayout(layout)
 
@@ -45,3 +52,6 @@ class exporter(QWidget):
 
     def save_bg_signal_false(self):
         self.save_bg_bool.emit(False)
+
+    def b_pic_si(self):
+        self.bg_pic.emit()

@@ -1,8 +1,9 @@
 import os
 from PyQt6.QtCore import pyqtSignal, QObject
+from Style import Style
+from collections import defaultdict
 
 class FileManager(QObject):
-
     def __init__(self, folder_path):
         super().__init__()
         self.folder_path = folder_path
@@ -46,23 +47,23 @@ class FileManager(QObject):
         return styles_no_dosign
                 
 
-    def get_paths_for_style(self, template_name, part_name):
-        paths = {}
+    def create_object_for_style(self, template_name, part_name, s_style):
+        new_styles = defaultdict(list)
         part_folder_path = os.path.join(self.folder_path, template_name, part_name)
         if os.path.exists(part_folder_path) and os.path.isdir(part_folder_path):
             styles = self.get_styles_for_part(template_name, part_name)
-            for style in styles:
-                if style == "None":
-                    paths[style] = ["None"]
-                elif style[-5] == "$":
-                    real_style = style.replace('$', '')
-                    if real_style in paths:
-                        paths[real_style].append(os.fsencode(os.path.join(part_folder_path, style)))
-                    else:
-                        paths[real_style] = [os.fsencode(os.path.join(part_folder_path, style))]
-                else:
-                    if style in paths:
-                        paths[style].append(os.fsencode(os.path.join(part_folder_path, style)))
-                    else:
-                        paths[style] = [os.fsencode(os.path.join(part_folder_path, style))]
-        return paths
+            do_style = s_style[:-5] + '$' + s_style[-5:]
+            if s_style =='None':
+                None_ident ='None'+ part_name
+                new_style_none = Style(None, part_name, None_ident, real=0)
+                new_styles[part_name].append(new_style_none)
+            else:
+                if do_style in styles:
+                    path_do = os.fsencode(os.path.join(part_folder_path, do_style))
+                    new_style_do = Style(path_do, part_name, do_style, real=2)
+                    new_styles[part_name].append(new_style_do)
+                path = os.fsencode(os.path.join(part_folder_path, s_style))
+                new_style = Style(path, part_name, s_style, real=1)
+                new_styles[part_name].append(new_style)
+        return new_styles
+                

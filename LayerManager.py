@@ -164,32 +164,32 @@ class LayerManager(QWidget):
         if part_name not in self.layers_order:
             self.layers_order.append(part_name)
 
-    def set_selected_styles(self, new_layers):
-        if not new_layers:
+    def set_selected_styles(self, object_list):
+        print("called")
+        if not object_list:
             self.layers.clear()
         else: 
-            replacing_styles = self.get_difference_between_dicts(self.layers, new_layers)
+            replacing_styles = self.get_difference_between_dicts(self.layers, object_list)
             already_selected_parts = [k.part_name for k in self.layers.values()]
             if list(replacing_styles.keys())[0] in already_selected_parts:
                 for replacing_style in replacing_styles.items():
                     self.replace_style(replacing_style)
             else:
-                for part_name, styles_for_part in replacing_styles.items():
-                    for style_dict in styles_for_part:
-                        [(style_name, style_path)] = style_dict.items()
-                        new_style = Style(style_path, part_name, style_name)
-                        self.layers[style_name] = new_style
+                for part_name, style_objs_list in replacing_styles.items():
+                    for style_obj in style_objs_list:
+                        style_name = style_obj.style_name
+                        self.layers[style_name] = style_obj
         self.refresh_layers()
 
     def get_difference_between_dicts(self, main, incoming):
         sum_diff = {}
-        for part_name, incoming_styles in incoming.items():
+        for part_name, style_objs in incoming.items():
             tmp = []
-            for incoming_style in incoming_styles:
-                if list(incoming_style.keys())[0] in list(main.keys()):
+            for obj in style_objs:
+                if obj.style_name in list(main.keys()):
                     pass
                 else:
-                    tmp.append(incoming_style)
+                    tmp.append(obj)
                     sum_diff[part_name] = tmp
         return sum_diff
 
@@ -202,13 +202,12 @@ class LayerManager(QWidget):
             if item.part_name == n_part_name:
                 index_needed.append(i)          
         style_list = new_style[1]
-
         if len(style_list) > len(index_needed): 
-            for i, style_dict in enumerate(style_list):
+            for i, style_obj in enumerate(style_list):
                 if i < len(index_needed):
                     [(name, path)] = style_dict.items()
                     list_keys[index_needed[i]] = name
-                    list_for_i[index_needed[i]] = Style(path, n_part_name, name)
+                    list_for_i[index_needed[i]] = style_obj
                 else:
                     insert_position = index_needed[-1] + 1
                     [(name, path)] = style_dict.items()
@@ -217,15 +216,23 @@ class LayerManager(QWidget):
         elif len(style_list) < len(index_needed):
             for i, style_dict in enumerate(style_list):
                 [(name, path)] = style_dict.items()
-                list_keys[index_needed[i]] = name
-                list_for_i[index_needed[i]] = Style(path, n_part_name, name)
-            del list_keys[len(style_list):]
-            del list_for_i[len(style_list):]
+                if name != None:
+                    list_keys[index_needed[i]] = name
+                    list_for_i[index_needed[i]] = Style(path, n_part_name, name)
+                else:
+                    del list_keys[index_needed[i]]
+                    del list_for_i[index_needed[i]]
+            del list_keys[index_needed[-1]]
+            del list_for_i[index_needed[-1]]
         else:
             for i, style_dict in enumerate(style_list):
                 [(name, path)] = style_dict.items()
-                list_keys[index_needed[i]] = name
-                list_for_i[index_needed[i]] = Style(path, n_part_name, name)
+                if name != None:
+                    list_keys[index_needed[i]] = name
+                    list_for_i[index_needed[i]] = Style(path, n_part_name, name)
+                else:
+                    del list_keys[index_needed[i]]
+                    del list_for_i[index_needed[i]]
         self.layers = OrderedDict(zip(list_keys, list_for_i))
               
     def move_item_in_list(self, from_index, to_index):

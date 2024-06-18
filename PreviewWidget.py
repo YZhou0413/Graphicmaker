@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QWidget, QVBoxLayout, QGridLayout, QPushButton, QApplication, QFileDialog
 from PyQt6.QtGui import QColor, QPixmap, QImage, QPainter, QIcon, QTransform
-from PyQt6.QtCore import Qt, QByteArray, QRectF
+from PyQt6.QtCore import Qt, QRectF, QSize, QRect
 import os
 import cv2
 import numpy as np
@@ -44,7 +44,25 @@ class PreviewGraphicsView(QGraphicsView):
         self.background_item.setZValue(-1) 
         self.scene_.addItem(self.background_item)
 
-    
+    def bg_pic(self):
+        if self.background_item:
+            self.scene_.removeItem(self.background_item)
+        fileName, _ = QFileDialog.getOpenFileName(self, "Select Image", "", "Images (*.png *.jpg *.jpeg)")
+        if fileName:
+            image = QImage(fileName)
+            if not image.isNull():
+                if image.width() > image.height():
+                    crop_rect = QRect((image.width() - image.height()) // 2, 0, image.height(), image.height())
+                else:
+                    crop_rect = QRect(0, (image.height() - image.width()) // 2, image.width(), image.width())
+                cropped_image = image.copy(crop_rect)
+                scaled_image = cropped_image.scaled(QSize(192, 192), Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                pixmap_con = QPixmap.fromImage(scaled_image)
+
+            self.background_item = QGraphicsPixmapItem(pixmap_con)
+            self.background_item.setZValue(-1) 
+            self.scene_.addItem(self.background_item)
+
     def clear_preview(self):
         for item in self.image_items:
             self.scene_.removeItem(item)
