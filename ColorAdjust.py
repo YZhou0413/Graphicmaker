@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QSlider, QLineEdit, QHBoxLayout
-from PyQt6.QtGui import QColor, QPalette, QIntValidator, QPixmap, QPainter, QBrush, QPen
+from PyQt6.QtGui import QColor, QIntValidator, QPainter, QBrush, QPen
 from PyQt6.QtCore import Qt, pyqtSignal
 
 class ColorSlider(QSlider):

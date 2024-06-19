@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGridLayout, QListWidget, QListWidgetItem
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QListWidget, QListWidgetItem
 from PyQt6.QtCore import pyqtSignal, Qt
 import random
 from collections import defaultdict
@@ -23,9 +23,7 @@ class PartSelector(QWidget):
 
         for style in self.styles:
             item_text = str(style)
-            item_data = style["path"]
             item = QListWidgetItem(item_text)
-            item.setData(Qt.ItemDataRole.UserRole, item_data )
             self.list_widget.addItem(item)
         self.list_widget.itemClicked.connect(self.react_item_click)
         self.block_layout.addWidget(self.list_widget)

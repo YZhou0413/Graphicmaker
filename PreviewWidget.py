@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QWidget, QVBoxLayout, QGridLayout, QPushButton, QApplication, QFileDialog
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QWidget, QVBoxLayout, QPushButton, QApplication, QFileDialog
 from PyQt6.QtGui import QColor, QPixmap, QImage, QPainter, QIcon, QTransform
 from PyQt6.QtCore import Qt, QRectF, QSize, QRect
 import os
@@ -96,21 +96,22 @@ class PreviewGraphicsView(QGraphicsView):
         self.image_items.clear()
 
         for (layer_name, item_style_obj) in layers_dict.items():
-            image_path_str = os.fsdecode(item_style_obj.path)
-            cv_image = cv2.imread(image_path_str, cv2.IMREAD_UNCHANGED)
-            if cv_image is not None:
-                if item_style_obj.hue is not None:
-                    cv_image = self.apply_color_adjustments(cv_image, item_style_obj.hue, item_style_obj.saturation, item_style_obj.brightness, item_style_obj.alpha)
+            if item_style_obj.real != 0:
+                image_path_str = os.fsdecode(item_style_obj.path)  
+                cv_image = cv2.imread(image_path_str, cv2.IMREAD_UNCHANGED)
+                if cv_image is not None:
+                    if item_style_obj.hue is not None:
+                        cv_image = self.apply_color_adjustments(cv_image, item_style_obj.hue, item_style_obj.saturation, item_style_obj.brightness, item_style_obj.alpha)
 
-                _, buffer = cv2.imencode('.png', cv_image)
-                image_data = buffer.tobytes()
-                pixmap = QPixmap()
-                pixmap.loadFromData(image_data)
-                pixmap_item = QGraphicsPixmapItem(pixmap)
-                self.scene_.addItem(pixmap_item)
-                self.image_items.append(pixmap_item)
+                    _, buffer = cv2.imencode('.png', cv_image)
+                    image_data = buffer.tobytes()
+                    pixmap = QPixmap()
+                    pixmap.loadFromData(image_data)
+                    pixmap_item = QGraphicsPixmapItem(pixmap)
+                    self.scene_.addItem(pixmap_item)
+                    self.image_items.append(pixmap_item)
 
-        self.fitInView(self.scene_.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+            self.fitInView(self.scene_.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
     
     def flip_view(self):
         self.flipped = not self.flipped

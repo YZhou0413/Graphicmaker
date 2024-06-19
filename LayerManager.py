@@ -48,7 +48,7 @@ class CustomListWidgetItem(QWidget):
         self.main_text_label.setStyleSheet("""
             QLabel {
                 qproperty-alignment: 'AlignVCenter | AlignLeft';
-                max-width: 120px;
+                max-width: 100px;
                 white-space: nowrap;
             }
         """)
@@ -165,7 +165,6 @@ class LayerManager(QWidget):
             self.layers_order.append(part_name)
 
     def set_selected_styles(self, object_list):
-        print("called")
         if not object_list:
             self.layers.clear()
         else: 
@@ -194,6 +193,7 @@ class LayerManager(QWidget):
         return sum_diff
 
     def replace_style(self, new_style):
+        #new_styles = dict = {"key":[obj1,obj2..]}
         n_part_name = new_style[0]
         list_keys = list(self.layers.keys())
         list_for_i = list(self.layers.values())
@@ -205,31 +205,27 @@ class LayerManager(QWidget):
         if len(style_list) > len(index_needed): 
             for i, style_obj in enumerate(style_list):
                 if i < len(index_needed):
-                    [(name, path)] = style_dict.items()
-                    list_keys[index_needed[i]] = name
+                    list_keys[index_needed[i]] = style_obj.style_name
                     list_for_i[index_needed[i]] = style_obj
                 else:
                     insert_position = index_needed[-1] + 1
-                    [(name, path)] = style_dict.items()
-                    list_keys.insert(insert_position, name)
-                    list_for_i.insert(insert_position, Style(path, n_part_name, name))
+                    list_keys.insert(insert_position, style_obj.style_name)
+                    list_for_i.insert(insert_position, style_obj)
         elif len(style_list) < len(index_needed):
-            for i, style_dict in enumerate(style_list):
-                [(name, path)] = style_dict.items()
-                if name != None:
-                    list_keys[index_needed[i]] = name
-                    list_for_i[index_needed[i]] = Style(path, n_part_name, name)
+            for i, style_obj in enumerate(style_list):
+                if style_obj.real != 0:
+                    list_keys[index_needed[i]] = style_obj.style_name
+                    list_for_i[index_needed[i]] = style_obj
                 else:
                     del list_keys[index_needed[i]]
                     del list_for_i[index_needed[i]]
             del list_keys[index_needed[-1]]
             del list_for_i[index_needed[-1]]
         else:
-            for i, style_dict in enumerate(style_list):
-                [(name, path)] = style_dict.items()
-                if name != None:
-                    list_keys[index_needed[i]] = name
-                    list_for_i[index_needed[i]] = Style(path, n_part_name, name)
+            for i, style_obj in enumerate(style_list):
+                if style_obj.real != 0:
+                    list_keys[index_needed[i]] = style_obj.style_name
+                    list_for_i[index_needed[i]] = style_obj
                 else:
                     del list_keys[index_needed[i]]
                     del list_for_i[index_needed[i]]
@@ -282,7 +278,6 @@ class LayerManager(QWidget):
         self.move_item_in_list(from_index, to_index)
 
     def update_buttons_state(self, current_item):
-        # 根据当前项的情况来设置按钮状态
         if current_item is None:
             self.raise_button.setEnabled(False)
             self.lower_button.setEnabled(False)
@@ -298,7 +293,7 @@ class LayerManager(QWidget):
             item = self.layer_list.item(i)
             widget_item = self.layer_list.itemWidget(item)
             if widget_item:
-                layer_identifier = widget_item.main_text_label.text()  # 图层的唯一标识符
+                layer_identifier = widget_item.main_text_label.text() 
                 checkbox_states[layer_identifier] = widget_item.is_checked()
 
         self.layer_list.clear()
@@ -311,7 +306,6 @@ class LayerManager(QWidget):
                 item.setSizeHint(widget_item.sizeHint())
                 self.layer_list.setItemWidget(item, widget_item)
 
-            # 恢复复选框状态
             for i in range(self.layer_list.count()):
                 item = self.layer_list.item(i)
                 widget_item = self.layer_list.itemWidget(item)

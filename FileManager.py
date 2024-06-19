@@ -1,5 +1,5 @@
 import os
-from PyQt6.QtCore import pyqtSignal, QObject
+from PyQt6.QtCore import QObject
 from Style import Style
 from collections import defaultdict
 
@@ -52,7 +52,7 @@ class FileManager(QObject):
         part_folder_path = os.path.join(self.folder_path, template_name, part_name)
         if os.path.exists(part_folder_path) and os.path.isdir(part_folder_path):
             styles = self.get_styles_for_part(template_name, part_name)
-            do_style = s_style[:-5] + '$' + s_style[-5:]
+            do_style = s_style[:-4] + '$' + s_style[-4:]
             if s_style =='None':
                 None_ident ='None'+ part_name
                 new_style_none = Style(None, part_name, None_ident, real=0)

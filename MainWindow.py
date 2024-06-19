@@ -1,6 +1,6 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QGridLayout, QToolBar, QDockWidget, QFrame, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QPushButton, QFileDialog
-from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QMainWindow, QGridLayout, QDockWidget, QFrame, QFileDialog
+from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import Qt, pyqtSignal
 from GUI import Graphicmaker
 from LayerManager import LayerManager
@@ -14,6 +14,8 @@ class Ui_MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setObjectName("Graphic Maker")
+        self.setWindowTitle("Graphic maker")
+        self.setWindowIcon(QIcon("Icons\\frameIcon.png"))
         self.setFixedSize(1000, 700)
 
         self.C_Adjuster = ColorAdjuster()

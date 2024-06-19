@@ -1,14 +1,9 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, \
-    QGridLayout, QPushButton, QComboBox, QListWidget, \
-    QListWidgetItem, QMessageBox
-from PyQt6.QtGui import QPixmap, QPainter, QImage, QImageReader
-from PyQt6.QtCore import Qt, pyqtSignal
-import os
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, \
+    QGridLayout, QComboBox, QMessageBox
+from PyQt6.QtCore import pyqtSignal
 from PartSelect import PartSelector
 from FileManager import FileManager
-from PreviewWidget import PreviewGraphicsView
-from LayerManager import LayerManager
 from collections import defaultdict
 
 class Graphicmaker(QWidget):
@@ -98,7 +93,7 @@ class Graphicmaker(QWidget):
     def clear_selected(self):
         for style_selector in self.style_selectors:
             style_selector.clear_item_select()
-        self.style_layers_info.emit({})
+        self.style_layers_info.emit(defaultdict())
         
     def random_selection(self):
         self.clear_selected()
