@@ -1,11 +1,12 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QListWidget, QListWidgetItem
-from PyQt6.QtCore import pyqtSignal, Qt
+import PySide6
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QListWidget, QListWidgetItem
+from PySide6.QtCore import Signal, Qt
 import random
 from collections import defaultdict
 
 class PartSelector(QWidget):
-    style_chosen = pyqtSignal(str, str) 
-    chosen_styles_to_layer = pyqtSignal(defaultdict)
+    style_chosen = Signal(str, str) 
+    chosen_styles_to_layer = Signal(defaultdict)
 
     def __init__(self, part_name, _styles, parent=None):
         super().__init__(parent)

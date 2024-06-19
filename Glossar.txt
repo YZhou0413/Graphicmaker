@@ -11,8 +11,8 @@ Style:
         exp.: Green hair, red hair, long hair, short hair...
 
 
-https://www.riverbankcomputing.com/static/Docs/PyQt6/api/qtwidgets/qabstractitemview.html#DragDropMode
-https://discuss.python.org/t/modulenotfounderror-no-module-named-pyqt5-pyqt6/49658
+https://www.riverbankcomputing.com/static/Docs/PySide6/api/qtwidgets/qabstractitemview.html#DragDropMode
+https://discuss.python.org/t/modulenotfounderror-no-module-named-pyqt5-PySide6/49658
 
 TODO: Create objects for styles:
 1. class style():

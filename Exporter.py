@@ -1,10 +1,11 @@
-from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QVBoxLayout, QGridLayout, QFrame
-from PyQt6.QtCore import Qt, pyqtSignal
+import PySide6
+from PySide6.QtWidgets import QWidget, QPushButton, QLabel, QVBoxLayout, QGridLayout, QFrame
+from PySide6.QtCore import Qt, Signal
 
 class exporter(QWidget):
-    bg_color_bool = pyqtSignal(bool)
-    save_bg_bool = pyqtSignal(bool)
-    bg_pic = pyqtSignal()
+    bg_color_bool = Signal(bool)
+    save_bg_bool = Signal(bool)
+    bg_pic = Signal()
     def __init__(self):
         super().__init__()
         self.setFixedSize(200, 220)

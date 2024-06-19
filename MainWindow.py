@@ -1,7 +1,8 @@
-from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QGridLayout, QDockWidget, QFrame, QFileDialog, QMessageBox
-from PyQt6.QtGui import QAction, QIcon
-from PyQt6.QtCore import Qt, pyqtSignal, QUrl
+import PySide6
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtWidgets import QMainWindow, QGridLayout, QDockWidget, QFrame, QFileDialog, QMessageBox
+from PySide6.QtGui import QAction, QIcon
+from PySide6.QtCore import Qt, Signal, QUrl
 from GUI import Graphicmaker
 from LayerManager import LayerManager
 from PreviewWidget import PreviewWidget
@@ -9,9 +10,11 @@ from ColorAdjust import ColorAdjuster
 from Exporter import exporter
 from Help import HelpWidget
 
+
+
 class Ui_MainWindow(QMainWindow):
-    new_folder = pyqtSignal(str)
-    random = pyqtSignal()
+    new_folder = Signal(str)
+    random = Signal()
     def __init__(self):
         super().__init__()
         self.setObjectName("Graphic Maker")

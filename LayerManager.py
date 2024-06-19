@@ -1,12 +1,13 @@
 import sys
-from PyQt6.QtWidgets import *
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QFont, QIcon
+import PySide6
+from PySide6.QtWidgets import *
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QFont, QIcon
 from collections import OrderedDict
 from collections import defaultdict
 
 class MyListWidget(QListWidget):
-    itemMoved = pyqtSignal(int, int)
+    itemMoved = Signal(int, int)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -37,8 +38,8 @@ class MyListWidget(QListWidget):
             widget.uncheck_box()
 
 class CustomListWidgetItem(QWidget):
-    checkbox_state_label = pyqtSignal(str, bool)
-    checked_state = pyqtSignal(bool)
+    checkbox_state_label = Signal(str, bool)
+    checked_state = Signal(bool)
     def __init__(self, number, a, main_text, parent=None):
         super().__init__(parent)
         self.number_label = QLabel(str(number))
@@ -106,8 +107,8 @@ class CustomListWidgetItem(QWidget):
         self.checked_state.emit(self.checkbox.isChecked())
 
 class LayerManager(QWidget):
-    clear_all_requested = pyqtSignal()
-    update_preview_dict = pyqtSignal(OrderedDict)
+    clear_all_requested = Signal()
+    update_preview_dict = Signal(OrderedDict)
     def __init__(self, preview):
         super().__init__()
         self.setWindowTitle('Layer Manager')

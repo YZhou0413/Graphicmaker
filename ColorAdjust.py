@@ -1,7 +1,8 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QSlider, QLineEdit, QHBoxLayout
-from PyQt6.QtGui import QColor, QIntValidator, QPainter, QBrush, QPen
-from PyQt6.QtCore import Qt, pyqtSignal
+import PySide6
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QSlider, QLineEdit, QHBoxLayout
+from PySide6.QtGui import QColor, QIntValidator, QPainter, QBrush, QPen
+from PySide6.QtCore import Qt, Signal, Slot
 
 class ColorSlider(QSlider):
     def __init__(self, color_func, *args, **kwargs):
@@ -46,8 +47,8 @@ class ColorSlider(QSlider):
 
 
 class ColorAdjuster(QWidget):
-    hsba_changed = pyqtSignal(int, int, int, int)
-    bg_color = pyqtSignal(int, int, int, int)
+    hsba_changed = Signal(int, int, int, int)
+    bg_color = Signal(int, int, int, int)
     def __init__(self):
         super().__init__()
         self.allow = False
@@ -126,13 +127,15 @@ class ColorAdjuster(QWidget):
         self.alpha_edit.setText(str(alpha_value))
     
     def mani_signal_connection(self, allow):
-        try:
-            self.hue_slider.findChild(QSlider).valueChanged.disconnect()
-            self.saturation_slider.findChild(QSlider).valueChanged.disconnect()
-            self.brightness_slider.findChild(QSlider).valueChanged.disconnect()
-            self.alpha_slider.valueChanged.disconnect()
-        except TypeError:
-            pass 
+        slider_names = ["hue_slider", "saturation_slider", "brightness_slider", "alpha_slider"]
+        for name in slider_names:
+            slider = self.findChild(QSlider, name)
+            if slider:
+                try:
+                    slider.valueChanged.disconnect()
+                except TypeError:
+                    pass
+
         if allow == False:
             self.hue_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
             self.saturation_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)

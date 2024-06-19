@@ -1,16 +1,17 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, \
+import PySide6
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, \
     QGridLayout, QComboBox, QMessageBox
-from PyQt6.QtCore import pyqtSignal
+from PySide6.QtCore import Signal
 from PartSelect import PartSelector
 from FileManager import FileManager
 from collections import defaultdict
 
 class Graphicmaker(QWidget):
-    style_layers_info = pyqtSignal(defaultdict)
-    part_click = pyqtSignal(str)
-    change_template = pyqtSignal(str)
-    set_style_data_sig = pyqtSignal(str, defaultdict)
+    style_layers_info = Signal(defaultdict)
+    part_click = Signal(str)
+    change_template = Signal(str)
+    set_style_data_sig = Signal(str, defaultdict)
     
     def __init__(self, layer_manager, folder_path, part_name = '--', styles = '--'):
         super().__init__()

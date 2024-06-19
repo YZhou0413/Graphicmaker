@@ -1,5 +1,6 @@
 import os
-from PyQt6.QtCore import QObject
+import PySide6
+from PySide6.QtCore import QObject
 from Style import Style
 from collections import defaultdict
 
@@ -66,4 +67,3 @@ class FileManager(QObject):
                 new_style = Style(path, part_name, s_style, real=1)
                 new_styles[part_name].append(new_style)
         return new_styles
-                

@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QWidget, QVBoxLayout, QPushButton, QApplication, QFileDialog
-from PyQt6.QtGui import QColor, QPixmap, QImage, QPainter, QIcon, QTransform
-from PyQt6.QtCore import Qt, QRectF, QSize, QRect
+import PySide6
+from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QWidget, QVBoxLayout, QPushButton, QApplication, QFileDialog
+from PySide6.QtGui import QColor, QPixmap, QImage, QPainter, QIcon, QTransform
+from PySide6.QtCore import Qt, QRectF, QSize, QRect
 import os
 import cv2
 import numpy as np

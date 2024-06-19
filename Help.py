@@ -1,7 +1,8 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextBrowser, QStackedWidget
-from PyQt6.QtGui import QColor, QFont, QIcon
-from PyQt6.QtCore import Qt
+import PySide6
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextBrowser, QStackedWidget
+from PySide6.QtGui import QColor, QFont, QIcon
+from PySide6.QtCore import Qt
 import markdown
 
 class HelpWidget(QWidget):
