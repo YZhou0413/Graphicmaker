@@ -1,12 +1,13 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QGridLayout, QDockWidget, QFrame, QFileDialog
+from PyQt6.QtWidgets import QMainWindow, QGridLayout, QDockWidget, QFrame, QFileDialog, QMessageBox
 from PyQt6.QtGui import QAction, QIcon
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QUrl
 from GUI import Graphicmaker
 from LayerManager import LayerManager
 from PreviewWidget import PreviewWidget
 from ColorAdjust import ColorAdjuster
 from Exporter import exporter
+from Help import HelpWidget
 
 class Ui_MainWindow(QMainWindow):
     new_folder = pyqtSignal(str)
@@ -24,6 +25,7 @@ class Ui_MainWindow(QMainWindow):
         self.selectors = Graphicmaker(layer_manager=self.L_manager, folder_path='Assets', part_name='--'
                              ,styles='--')
         self.exporter = exporter()
+        self.help_widget = HelpWidget()
         self.setCentralWidget(self.selectors)
         
         self.random.connect(self.selectors.random_selection)
@@ -69,13 +71,18 @@ class Ui_MainWindow(QMainWindow):
         no_bg = SaveA.addAction('*.PNG without background')
         no_bg.triggered.connect(self.exporter.save_bg_signal_false)
         HelpAct = QAction("Help", self)
+        HelpAct.triggered.connect(self.help_widget_show)
         QuitAct = QAction("Quit", self)
         RandomAct = QAction("Randomizer", self)
         RandomAct.triggered.connect(self.throw_random)
         QuitAct.triggered.connect(self.close)
+
         menu.addAction(RandomAct)
         menu.addAction(HelpAct)
         menu.addAction(QuitAct)
+
+    def help_widget_show(self):
+        self.help_widget.show()
 
     def set_source_path(self):
         new_folder_path = QFileDialog.getExistingDirectory(self, "Select Directory")
