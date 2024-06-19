@@ -236,8 +236,8 @@ class LayerManager(QWidget):
                     abc=123
                     del list_keys[index_needed[i]]
                     del list_for_i[index_needed[i]]
-                del list_keys[index_needed[1]]
-                del list_for_i[index_needed[1]]
+                del list_keys[index_needed[0]]
+                del list_for_i[index_needed[0]]
         else:
             for i, style_obj in enumerate(style_list):
                 if style_obj.real != 0:
