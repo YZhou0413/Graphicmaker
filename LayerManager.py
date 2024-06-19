@@ -1,10 +1,8 @@
 import sys
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QCursor, QFont
-from collections import OrderedDict, deque
-from PreviewWidget import PreviewGraphicsView
-from Style import Style
+from PyQt6.QtGui import QFont, QIcon
+from collections import OrderedDict
 from collections import defaultdict
 
 class MyListWidget(QListWidget):
@@ -32,9 +30,15 @@ class MyListWidget(QListWidget):
             if widget.main_text_label.text() == text:
                 widget.set_checked(state)
 
+    def uncheck_all_checkbox(self):
+        for i in range(self.count()):
+            item = self.item(i)
+            widget = self.itemWidget(item)
+            widget.uncheck_box()
 
 class CustomListWidgetItem(QWidget):
     checkbox_state_label = pyqtSignal(str, bool)
+    checked_state = pyqtSignal(bool)
     def __init__(self, number, a, main_text, parent=None):
         super().__init__(parent)
         self.number_label = QLabel(str(number))
@@ -44,7 +48,6 @@ class CustomListWidgetItem(QWidget):
         self.main_text_label.setWordWrap(False)
         self.main_text_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         
-        # 使用样式表设置省略号
         self.main_text_label.setStyleSheet("""
             QLabel {
                 qproperty-alignment: 'AlignVCenter | AlignLeft';
@@ -95,8 +98,12 @@ class CustomListWidgetItem(QWidget):
     def set_checked(self, checked):
         self.checkbox.setChecked(checked)
 
+    def uncheck_box(self):
+        self.checkbox.setChecked(False)
+
     def update_color_layers(self):
         self.checkbox_state_label.emit(self.main_text_label.text(), self.checkbox.isChecked())
+        self.checked_state.emit(self.checkbox.isChecked())
 
 class LayerManager(QWidget):
     clear_all_requested = pyqtSignal()
@@ -131,20 +138,25 @@ class LayerManager(QWidget):
 
         self.lower_button = QPushButton("Lower Layer")
         self.raise_button = QPushButton("Raise Layer")
-        self.clear_button = QPushButton("Clear all")
+        self.clear_layer_button = QPushButton("Clear all layers")
+        self.clear_checked_box = QPushButton("Reset Check")
+        self.clear_checked_box.setIcon(QIcon("Icons\\x-square.svg"))
         self.raise_button.setEnabled(False)
         self.lower_button.setEnabled(False)
-        self.clear_button.setEnabled(False)
+        self.clear_layer_button.setEnabled(False)
+        self.clear_checked_box.setEnabled(False)
         
         self.lower_button.clicked.connect(lambda: self.lower_layer(self.selected_layer_index))
         self.raise_button.clicked.connect(lambda: self.raise_layer(self.selected_layer_index))
-        self.clear_button.clicked.connect(lambda: self.clear_layers_template_change(self))
+        self.clear_layer_button.clicked.connect(lambda: self.clear_layers_template_change(self))
+        self.clear_checked_box.clicked.connect(lambda: self.uncheck_all())
         
         layout = QVBoxLayout()
         button_layout = QGridLayout()
         button_layout.addWidget(self.lower_button, 0, 0)
         button_layout.addWidget(self.raise_button, 0, 1)
-        button_layout.addWidget(self.clear_button, 1, 0, 1, 2)
+        button_layout.addWidget(self.clear_layer_button, 1, 0)
+        button_layout.addWidget(self.clear_checked_box, 1, 1)
         self.setFixedSize(210, 400)
         layout.addWidget(self.LM_label)
         layout.addWidget(self.layer_list)
@@ -156,6 +168,9 @@ class LayerManager(QWidget):
         self.layers.clear()
         self.refresh_layers()
         self.clear_all_requested.emit()
+    
+    def uncheck_all(self):
+        self.layer_list.uncheck_all_checkbox()
 
     def set_layer_index(self, index):
         self.selected_layer_index = index
@@ -281,11 +296,15 @@ class LayerManager(QWidget):
         if current_item is None:
             self.raise_button.setEnabled(False)
             self.lower_button.setEnabled(False)
-            self.clear_button.setEnabled(False)
+            self.clear_layer_button.setEnabled(False)
         else:
             self.raise_button.setEnabled(True)
             self.lower_button.setEnabled(True)
-            self.clear_button.setEnabled(True)
+            self.clear_layer_button.setEnabled(True)
+    
+    def update_uncheck_button(self, check_state_bool):
+        if check_state_bool == True:
+            self.clear_checked_box.setEnabled(True)
 
     def refresh_layers(self):
         checkbox_states = {}
@@ -303,6 +322,7 @@ class LayerManager(QWidget):
                 item = QListWidgetItem(self.layer_list)
                 widget_item = CustomListWidgetItem(i + 1, layer_data.part_name, layer_data.style_name)
                 widget_item.checkbox_state_label.connect(self.handle_color_change_list)
+                widget_item.checked_state.connect(self.update_uncheck_button)
                 item.setSizeHint(widget_item.sizeHint())
                 self.layer_list.setItemWidget(item, widget_item)
 
