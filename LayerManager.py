@@ -124,9 +124,9 @@ class LayerManager(QWidget):
         self.layer_list.setStyleSheet("""
             QListWidget::item {
                 height: 30px;
-                border: 1px solid #eeeeee; 
-                margin: 2px; 
-                background: #f3f6f4;
+                border: 2px groove #bcbcbc; 
+                margin: 0px; 
+                
             }
             QListWidget::item:selected {
                 background: #91A3B0; 
@@ -232,10 +232,11 @@ class LayerManager(QWidget):
                     list_keys[index_needed[i]] = style_obj.style_name
                     list_for_i[index_needed[i]] = style_obj
                 else:
+                    abc=123
                     del list_keys[index_needed[i]]
                     del list_for_i[index_needed[i]]
-            del list_keys[index_needed[-1]]
-            del list_for_i[index_needed[-1]]
+                del list_keys[index_needed[1]]
+                del list_for_i[index_needed[1]]
         else:
             for i, style_obj in enumerate(style_list):
                 if style_obj.real != 0:

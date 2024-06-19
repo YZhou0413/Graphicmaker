@@ -97,8 +97,11 @@ class PreviewGraphicsView(QGraphicsView):
 
         for (layer_name, item_style_obj) in layers_dict.items():
             if item_style_obj.real != 0:
-                image_path_str = os.fsdecode(item_style_obj.path)  
-                cv_image = cv2.imread(image_path_str, cv2.IMREAD_UNCHANGED)
+                image_path = item_style_obj.path
+                image_path_by = open(image_path, "rb")
+                path_n_array = bytearray(image_path_by.read())
+                n_array = np.asarray(path_n_array, dtype=np.uint8)
+                cv_image = cv2.imdecode(n_array, cv2.IMREAD_UNCHANGED)
                 if cv_image is not None:
                     if item_style_obj.hue is not None:
                         cv_image = self.apply_color_adjustments(cv_image, item_style_obj.hue, item_style_obj.saturation, item_style_obj.brightness, item_style_obj.alpha)
