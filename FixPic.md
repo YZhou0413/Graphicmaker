@@ -4,13 +4,13 @@
 
 2.打开您电脑系统的语言设置。
 
-![语言设置](GuideImages\langsetting.png)
+![语言设置](GuideImages//langsetting.png)
 
 3.点击管理语言设置。
 
 4.将非Unicode程序中的当前语言改为 “日语（日本）”。
 
-![Unicode设置](GuideImages\unisetting.png)
+![Unicode设置](GuideImages//unisetting.png)
 
 5.改好之后再对下载的资源包进行解压，就可以修复资源名乱码的问题。
 
