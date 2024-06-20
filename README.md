@@ -12,4 +12,4 @@
 2. 程序用于生成192x192格式的人物头像，最好使用PNG格式的图片素材。程序合成导出的图片也为PNG格式。
 3. [点击跳转到使用说明](Guide.md)
 4. 推荐能够自行配置python环境的利用[配置文件](requirements.txt)使用。
-5. ❗❗对于没有python环境的朋友也有Windows打包版本，但因为exe无数字签名，在下载&运行过程中会被google和windows defender判定为含病毒或有风险文件，介意请勿下载使用，本人不承担任何责任。❗❗
+5. ❗❗对于没有python环境的朋友也有Windows打包版本（见右侧"Release"内详情），但因为exe无数字签名，在下载&运行过程中会被google和windows defender判定为含病毒或有风险文件，介意请勿下载使用，本人不承担任何责任。❗❗
