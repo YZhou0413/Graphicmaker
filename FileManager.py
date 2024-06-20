@@ -39,7 +39,7 @@ class FileManager(QObject):
         part_folder_path = os.path.join(self.folder_path, template_name, part_name)
         if os.path.exists(part_folder_path) and os.path.isdir(part_folder_path):
             styles = [ f for f in os.listdir(part_folder_path) if os.path.isfile(os.path.join(part_folder_path, f))] 
-        styles.insert(0,"None")
+        styles.insert(0, "None")
         return styles
     
     def remove_dosign(self, template_name, part_name):

@@ -2,7 +2,6 @@ import PySide6
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QWidget, QVBoxLayout, QPushButton, QApplication, QFileDialog
 from PySide6.QtGui import QColor, QPixmap, QImage, QPainter, QIcon, QTransform
 from PySide6.QtCore import Qt, QRectF, QSize, QRect
-import os
 import cv2
 import numpy as np
 
@@ -61,7 +60,7 @@ class PreviewGraphicsView(QGraphicsView):
                 pixmap_con = QPixmap.fromImage(scaled_image)
 
             self.background_item = QGraphicsPixmapItem(pixmap_con)
-            self.background_item.setZValue(-1) 
+            self.background_item.setZValue(-1)
             self.scene_.addItem(self.background_item)
 
     def clear_preview(self):
