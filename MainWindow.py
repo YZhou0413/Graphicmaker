@@ -12,6 +12,7 @@ from Help import HelpWidget
 
 
 
+
 class Ui_MainWindow(QMainWindow):
     new_folder = Signal(str)
     random = Signal()
