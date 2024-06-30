@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QSlide
 from PySide6.QtGui import QColor, QIntValidator, QPainter, QBrush, QPen
 from PySide6.QtCore import Qt, Signal, Slot
 
+
 class ColorSlider(QSlider):
     def __init__(self, color_func, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,10 +39,12 @@ class ColorSlider(QSlider):
             shadow_color.setAlpha(alpha)
             painter.setBrush(QBrush(shadow_color))
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawEllipse(slider_position - handle_radius - i, rect.height() // 2 - handle_radius - i, 2 * (handle_radius + i), 2 * (handle_radius + i))
+            painter.drawEllipse(slider_position - handle_radius - i, rect.height() // 2 - handle_radius - i,
+                                2 * (handle_radius + i), 2 * (handle_radius + i))
         painter.setBrush(QBrush(handle_color))
         painter.setPen(QPen(Qt.GlobalColor.white, 2))
-        painter.drawEllipse(slider_position - handle_radius, rect.height() // 2 - handle_radius, 2 * handle_radius, 2 * handle_radius)
+        painter.drawEllipse(slider_position - handle_radius, rect.height() // 2 - handle_radius, 2 * handle_radius,
+                            2 * handle_radius)
 
         painter.end()
 
@@ -49,6 +52,7 @@ class ColorSlider(QSlider):
 class ColorAdjuster(QWidget):
     hsba_changed = Signal(int, int, int, int)
     bg_color = Signal(int, int, int, int)
+
     def __init__(self):
         super().__init__()
         self.allow = False
@@ -84,10 +88,10 @@ class ColorAdjuster(QWidget):
         self.mani_signal_connection(self.allow)
         self.setFixedSize(230, self.sizeHint().height())
 
-        self.hue_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
-        self.saturation_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
-        self.brightness_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
-        self.alpha_slider.valueChanged.connect(self.emit_color_value)
+        self.hue_slider.findChild(QSlider).valueChanged.connect(self.emit_color_for_thing)
+        self.saturation_slider.findChild(QSlider).valueChanged.connect(self.emit_color_for_thing)
+        self.brightness_slider.findChild(QSlider).valueChanged.connect(self.emit_color_for_thing)
+        self.alpha_slider.valueChanged.connect(self.emit_color_for_thing)
 
     def create_slider(self, name, min_val, max_val, color_func):
         label = QLabel(name)
@@ -110,10 +114,12 @@ class ColorAdjuster(QWidget):
         return QColor.fromHsl(value, 255, 127)
 
     def brightness_color(self, value):
-        return QColor.fromHsl(self.hue_slider.findChild(QSlider).value(), self.saturation_slider.findChild(QSlider).value(), value)
+        return QColor.fromHsl(self.hue_slider.findChild(QSlider).value(),
+                              self.saturation_slider.findChild(QSlider).value(), value)
 
     def saturation_color(self, value):
-        return QColor.fromHsl(self.hue_slider.findChild(QSlider).value(), value, self.brightness_slider.findChild(QSlider).value())
+        return QColor.fromHsl(self.hue_slider.findChild(QSlider).value(), value,
+                              self.brightness_slider.findChild(QSlider).value())
 
     def update_alpha_from_text(self):
         alpha_text = self.alpha_edit.text()
@@ -125,8 +131,9 @@ class ColorAdjuster(QWidget):
     def update_alpha_from_slider(self):
         alpha_value = self.alpha_slider.value()
         self.alpha_edit.setText(str(alpha_value))
-    
+
     def mani_signal_connection(self, allow):
+        self.allow = allow
         slider_names = ["hue_slider", "saturation_slider", "brightness_slider", "alpha_slider"]
         for name in slider_names:
             slider = self.findChild(QSlider, name)
@@ -136,33 +143,29 @@ class ColorAdjuster(QWidget):
                 except TypeError:
                     pass
 
-        if allow == False:
-            self.hue_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
-            self.saturation_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
-            self.brightness_slider.findChild(QSlider).valueChanged.connect(self.emit_color_value)
-            self.alpha_slider.valueChanged.connect(self.emit_color_value)
+        self.change_color_connections_to()
+
+    def change_color_connections_to(self):
+        self.hue_slider.findChild(QSlider).valueChanged.connect(self.emit_color_for_thing)
+        self.saturation_slider.findChild(QSlider).valueChanged.connect(self.emit_color_for_thing)
+        self.brightness_slider.findChild(QSlider).valueChanged.connect(self.emit_color_for_thing)
+        self.alpha_slider.valueChanged.connect(self.emit_color_for_thing)
+
+    def emit_color_for_thing(self):
+        alpha, brightness, hue, saturation = self.collect_values()
+        if self.allow == False:
+            self.hsba_changed.emit(hue, saturation, brightness, alpha)
         else:
-            self.hue_slider.findChild(QSlider).valueChanged.connect(self.emit_color_for_bg)
-            self.saturation_slider.findChild(QSlider).valueChanged.connect(self.emit_color_for_bg)
-            self.brightness_slider.findChild(QSlider).valueChanged.connect(self.emit_color_for_bg)
-            self.alpha_slider.valueChanged.connect(self.emit_color_for_bg)
+            self.bg_color.emit(hue, saturation, brightness, alpha)
 
 
-    def emit_color_value(self):
+    def collect_values(self):
         hue = self.hue_slider.findChild(QSlider).value()
         saturation = self.saturation_slider.findChild(QSlider).value()
         brightness = self.brightness_slider.findChild(QSlider).value()
         alpha = int(self.alpha_slider.value() * 255 / 100)
-        self.hsba_changed.emit(hue, saturation, brightness, alpha)
-        
-    
+        return alpha, brightness, hue, saturation
 
-    def emit_color_for_bg(self):
-        hue = self.hue_slider.findChild(QSlider).value()
-        saturation = self.saturation_slider.findChild(QSlider).value()
-        brightness = self.brightness_slider.findChild(QSlider).value()
-        alpha = int(self.alpha_slider.value() * 255 / 100)
-        self.bg_color.emit(hue, saturation, brightness, alpha)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
