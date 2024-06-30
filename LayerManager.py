@@ -162,6 +162,7 @@ class LayerManager(QWidget):
         layout.addWidget(self.LM_label)
         layout.addWidget(self.layer_list)
         layout.addLayout(button_layout)
+        layout.setSpacing(5)
 
         self.setLayout(layout)
 
@@ -230,12 +231,12 @@ class LayerManager(QWidget):
         elif len(style_list) < len(index_needed):
             for i, style_obj in enumerate(style_list):
                 if style_obj.real != 0:
-                    list_keys[index_needed[i]] = style_obj.style_name
-                    list_for_i[index_needed[i]] = style_obj
+                    list_keys[index_needed[1]] = style_obj.style_name
+                    list_for_i[index_needed[1]] = style_obj
                 else:
                     abc=123
-                    del list_keys[index_needed[i]]
-                    del list_for_i[index_needed[i]]
+                    del list_keys[index_needed[1]]
+                    del list_for_i[index_needed[1]]
                 del list_keys[index_needed[0]]
                 del list_for_i[index_needed[0]]
         else:
